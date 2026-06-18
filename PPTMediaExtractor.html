@@ -161,7 +161,32 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-top: 18px;
+      margin-top: 12px;
+    }
+
+    .control-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-kicker {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 820;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .rule-card {
+      margin-top: 12px;
+      padding: 13px 14px;
+      border: 1px solid #c7ddeb;
+      border-radius: 14px;
+      background: #f3faff;
+      color: #25425d;
+      font-size: 0.88rem;
     }
 
     label {
@@ -170,6 +195,13 @@
       color: var(--muted);
       font-size: 0.82rem;
       font-weight: 650;
+    }
+
+    .field-help {
+      color: #7a8597;
+      font-size: 0.74rem;
+      font-weight: 500;
+      line-height: 1.3;
     }
 
     input[type="number"] {
@@ -463,7 +495,8 @@
     <section class="grid">
       <aside class="card">
         <div class="card-inner">
-          <h2>Source Deck</h2>
+          <div class="section-kicker">Step 1</div>
+          <h2>Choose a PowerPoint</h2>
           <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Choose or drop a PowerPoint file">
             <input id="fileInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
             <div>
@@ -473,26 +506,25 @@
             </div>
           </div>
 
-          <div class="settings" aria-label="Resolution settings">
-            <label>
-              Output width
-              <input id="frameWidth" type="number" min="320" max="8192" step="1" value="1920">
-            </label>
-            <label>
-              Output height
-              <input id="frameHeight" type="number" min="240" max="8192" step="1" value="1080">
-            </label>
-            <label>
-              Full-screen min width
-              <input id="minSourceWidth" type="number" min="320" max="8192" step="1" value="1920">
-            </label>
-            <label>
-              Full-screen min height
-              <input id="minSourceHeight" type="number" min="240" max="8192" step="1" value="1080">
-            </label>
-          </div>
+          <div class="control-section">
+            <div class="section-kicker">Step 2</div>
+            <h2>Set the resolution rule</h2>
+            <div class="rule-card">Any image or video below this expected source size is marked <strong>LOW_RES__</strong>, even if PowerPoint only uses it as a small graphic.</div>
+            <div class="settings" aria-label="Resolution settings">
+              <label>
+                Expected source width
+                <input id="expectedWidth" type="number" min="320" max="8192" step="1" value="1920">
+                <span class="field-help">Files narrower than this are flagged.</span>
+              </label>
+              <label>
+                Expected source height
+                <input id="expectedHeight" type="number" min="240" max="8192" step="1" value="1080">
+                <span class="field-help">Files shorter than this are flagged.</span>
+              </label>
+            </div>
 
-          <p class="hint">Items are marked low-res when the media is smaller than its largest on-slide use at the selected output size. Unplaced media is checked against the full-screen minimum.</p>
+            <p class="hint">PowerPoint placement is still shown in the report as context, but it no longer determines whether an asset passes.</p>
+          </div>
 
           <div class="button-row">
             <button id="analyzeButton" class="primary" disabled>Analyze PowerPoint</button>
@@ -534,10 +566,8 @@
         downloadButton: document.getElementById("downloadButton"),
         status: document.getElementById("status"),
         results: document.getElementById("results"),
-        frameWidth: document.getElementById("frameWidth"),
-        frameHeight: document.getElementById("frameHeight"),
-        minSourceWidth: document.getElementById("minSourceWidth"),
-        minSourceHeight: document.getElementById("minSourceHeight")
+        expectedWidth: document.getElementById("expectedWidth"),
+        expectedHeight: document.getElementById("expectedHeight")
       };
 
       let selectedFile = null;
@@ -595,7 +625,7 @@
         downloadBlob(currentPackage.zipBlob, currentPackage.zipName);
       });
 
-      [elements.frameWidth, elements.frameHeight, elements.minSourceWidth, elements.minSourceHeight].forEach(function (input) {
+      [elements.expectedWidth, elements.expectedHeight].forEach(function (input) {
         input.addEventListener("change", function () {
           if (selectedFile) {
             currentPackage = null;
@@ -655,12 +685,12 @@
       }
 
       function getSettings() {
-        return {
-          frameWidth: cleanNumber(elements.frameWidth.value, 1920),
-          frameHeight: cleanNumber(elements.frameHeight.value, 1080),
-          minSourceWidth: cleanNumber(elements.minSourceWidth.value, 1920),
-          minSourceHeight: cleanNumber(elements.minSourceHeight.value, 1080)
-        };
+        const expectedWidth = cleanNumber(elements.expectedWidth.value, 1920);
+        const expectedHeight = cleanNumber(elements.expectedHeight.value, 1080);
+        return normalizeSettings({
+          expectedWidth: expectedWidth,
+          expectedHeight: expectedHeight
+        });
       }
 
       function cleanNumber(value, fallback) {
@@ -668,7 +698,19 @@
         return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
       }
 
+      function normalizeSettings(settings) {
+        const expectedWidth = cleanNumber(settings && (settings.expectedWidth || settings.frameWidth || settings.minSourceWidth), 1920);
+        const expectedHeight = cleanNumber(settings && (settings.expectedHeight || settings.frameHeight || settings.minSourceHeight), 1080);
+        return {
+          expectedWidth: expectedWidth,
+          expectedHeight: expectedHeight,
+          frameWidth: expectedWidth,
+          frameHeight: expectedHeight
+        };
+      }
+
       async function analyzePptx(file, settings) {
+        settings = normalizeSettings(settings);
         const buffer = await file.arrayBuffer();
         const zip = SimpleZip.fromArrayBuffer(buffer);
         if (!zip.has("[Content_Types].xml") || !zip.has("ppt/presentation.xml")) {
@@ -926,16 +968,13 @@
         if (!dimensions || !dimensions.width || !dimensions.height) {
           status = "check";
           warnings.push("Could not read " + options.category + " dimensions; review manually.");
-        } else if (largestDisplay) {
-          const widthShortfall = dimensions.width < largestDisplay.width;
-          const heightShortfall = dimensions.height < largestDisplay.height;
+        } else {
+          const widthShortfall = dimensions.width < options.settings.expectedWidth;
+          const heightShortfall = dimensions.height < options.settings.expectedHeight;
           if (widthShortfall || heightShortfall) {
             status = "low";
-            warnings.push("Low resolution for largest on-slide use: " + dimensions.width + "x" + dimensions.height + " source displayed at about " + largestDisplay.width + "x" + largestDisplay.height + " in a " + options.settings.frameWidth + "x" + options.settings.frameHeight + " export.");
+            warnings.push("Below expected source size: " + dimensions.width + "x" + dimensions.height + " is smaller than " + options.settings.expectedWidth + "x" + options.settings.expectedHeight + ".");
           }
-        } else if (dimensions.width < options.settings.minSourceWidth || dimensions.height < options.settings.minSourceHeight) {
-          status = "low";
-          warnings.push("Low source resolution for unplaced media: " + dimensions.width + "x" + dimensions.height + " is below the full-screen minimum of " + options.settings.minSourceWidth + "x" + options.settings.minSourceHeight + ".");
         }
 
         if (options.duplicateOf) {
@@ -1010,11 +1049,11 @@
         const videoCount = result.items.filter(function (item) { return item.category === "video"; }).length;
         const rows = result.items.map(renderItemRow).join("");
         const table = rows
-          ? "<div class=\"table-wrap\"><table><thead><tr><th>Status</th><th>Media</th><th>Slides</th><th>Source Size</th><th>Largest Use</th><th>Export Name</th><th>Warnings</th></tr></thead><tbody>" + rows + "</tbody></table></div>"
+          ? "<div class=\"table-wrap\"><table><thead><tr><th>Status</th><th>Media</th><th>Slides</th><th>Source Size</th><th>PPT Use</th><th>Export Name</th><th>Warnings</th></tr></thead><tbody>" + rows + "</tbody></table></div>"
           : "<div class=\"empty-state\"><div><strong>No embedded media found.</strong><p>This deck did not contain extractable image or video files under <span class=\"path\">ppt/media</span>.</p></div></div>";
 
         elements.results.innerHTML = [
-          "<div class=\"toolbar\"><div class=\"file-name\" title=\"" + escapeHtml(result.fileName) + "\">" + escapeHtml(result.fileName) + "</div><div class=\"badge\">" + result.settings.frameWidth + "x" + result.settings.frameHeight + " check</div></div>",
+          "<div class=\"toolbar\"><div class=\"file-name\" title=\"" + escapeHtml(result.fileName) + "\">" + escapeHtml(result.fileName) + "</div><div class=\"badge\">Expected source: " + result.settings.expectedWidth + "x" + result.settings.expectedHeight + "</div></div>",
           "<div class=\"summary\">",
           renderStat(result.items.length, "Media files"),
           renderStat(imageCount, "Images"),
@@ -1023,6 +1062,7 @@
           "</div>",
           table,
           result.externalMedia.length ? "<p class=\"report-note\">" + result.externalMedia.length + " external media reference" + plural(result.externalMedia.length) + " found. External media cannot be extracted from the .pptx package.</p>" : "",
+          "<p class=\"report-note\">PPT use is approximate context based on the largest detected placement. It does not decide whether an item passes.</p>",
           "<p class=\"report-note\">The downloaded ZIP includes the original files plus HTML and CSV reports.</p>"
         ].join("");
       }
@@ -1088,7 +1128,7 @@
             }).join("") + "</ul>"
           : "";
 
-        return "<!doctype html><html><head><meta charset=\"utf-8\"><title>PPT Media Report</title><style>body{font-family:Inter,Arial,sans-serif;margin:32px;color:#172033}h1{margin-bottom:4px}p{color:#647086}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #d9e0ea;padding:8px;text-align:left;vertical-align:top}th{background:#f3f6fa}.summary{display:flex;gap:12px;margin:18px 0}.stat{border:1px solid #d9e0ea;border-radius:12px;padding:12px 14px}.value{font-weight:800;font-size:24px}</style></head><body><h1>PPT Media Report</h1><p>Source: " + escapeHtml(fileName) + "</p><p>Checked against " + settings.frameWidth + "x" + settings.frameHeight + " output. Unplaced media checked against " + settings.minSourceWidth + "x" + settings.minSourceHeight + " full-screen minimum.</p><div class=\"summary\"><div class=\"stat\"><div class=\"value\">" + items.length + "</div><div>Total media</div></div><div class=\"stat\"><div class=\"value\">" + lowCount + "</div><div>Low-res</div></div><div class=\"stat\"><div class=\"value\">" + checkCount + "</div><div>Check manually</div></div></div><table><thead><tr><th>Status</th><th>Type</th><th>Source</th><th>Exported As</th><th>Slides</th><th>Source Size</th><th>Largest Use</th><th>Warnings</th></tr></thead><tbody>" + rows + "</tbody></table>" + externalRows + "</body></html>";
+        return "<!doctype html><html><head><meta charset=\"utf-8\"><title>PPT Media Report</title><style>body{font-family:Inter,Arial,sans-serif;margin:32px;color:#172033}h1{margin-bottom:4px}p{color:#647086}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #d9e0ea;padding:8px;text-align:left;vertical-align:top}th{background:#f3f6fa}.summary{display:flex;gap:12px;margin:18px 0}.stat{border:1px solid #d9e0ea;border-radius:12px;padding:12px 14px}.value{font-weight:800;font-size:24px}</style></head><body><h1>PPT Media Report</h1><p>Source: " + escapeHtml(fileName) + "</p><p>Flagged below expected source size: " + settings.expectedWidth + "x" + settings.expectedHeight + ". PowerPoint use is approximate context only and does not decide pass/fail.</p><div class=\"summary\"><div class=\"stat\"><div class=\"value\">" + items.length + "</div><div>Total media</div></div><div class=\"stat\"><div class=\"value\">" + lowCount + "</div><div>Low-res</div></div><div class=\"stat\"><div class=\"value\">" + checkCount + "</div><div>Check manually</div></div></div><table><thead><tr><th>Status</th><th>Type</th><th>Source</th><th>Exported As</th><th>Slides</th><th>Source Size</th><th>PPT Use</th><th>Warnings</th></tr></thead><tbody>" + rows + "</tbody></table>" + externalRows + "</body></html>";
       }
 
       function buildCsvReport(items, externalMedia) {
@@ -1100,8 +1140,8 @@
           "slides",
           "source_width",
           "source_height",
-          "largest_use_width",
-          "largest_use_height",
+          "ppt_use_width",
+          "ppt_use_height",
           "warnings"
         ]];
         items.forEach(function (item) {

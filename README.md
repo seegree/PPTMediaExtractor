@@ -21,17 +21,19 @@ The ZIP contains:
 
 Media that needs review is prefixed in the ZIP:
 
-- `LOW_RES__` means the media appears too small for its largest detected use.
+- `LOW_RES__` means the media is below the expected source size.
 - `CHECK_SIZE__` means the extractor could not confidently read dimensions, or
   the file is a duplicate worth reviewing.
 
 ## Resolution Checks
 
-The tool compares media dimensions against the largest detected use on a slide.
-The default output size is `1920 x 1080`.
+The tool compares every image and video against an expected source size. The
+default is `1920 x 1080`. If either dimension is smaller than that expected
+size, the media is marked `LOW_RES__`.
 
-For media that exists in `ppt/media` but is not mapped to a slide, the tool uses
-the full-screen minimum fields. The defaults are also `1920 x 1080`.
+PowerPoint placement is still shown in the report as context, but it does not
+decide whether an item passes. A small logo, screenshot, or icon can still be
+flagged if its original file is below the expected source size.
 
 ## Privacy
 
