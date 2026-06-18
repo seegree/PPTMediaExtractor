@@ -1,0 +1,1858 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PPT Media Extractor</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #647086;
+      --line: #d9e0ea;
+      --accent: #0076a8;
+      --accent-2: #00a9e0;
+      --good: #2f7d32;
+      --warn: #b26b00;
+      --bad: #b7312c;
+      --soft-warn: #fff4df;
+      --soft-bad: #ffebe9;
+      --shadow: 0 18px 45px rgba(18, 34, 61, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #eaf6fb, transparent 34rem), var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 42px 0 56px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 26px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3.35rem);
+      line-height: 1;
+      letter-spacing: -0.045em;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .lede {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 1.06rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--muted);
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(217, 224, 234, 0.9);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-inner {
+      padding: 22px;
+    }
+
+    .drop-zone {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 232px;
+      padding: 28px;
+      border: 2px dashed #a9b8ca;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(0, 169, 224, 0.08), rgba(0, 118, 168, 0.03)),
+        #fbfdff;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.is-dragging {
+      border-color: var(--accent);
+      background:
+        linear-gradient(135deg, rgba(0, 169, 224, 0.14), rgba(0, 118, 168, 0.06)),
+        #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .drop-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 14px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-weight: 800;
+      font-size: 1.25rem;
+      box-shadow: 0 14px 28px rgba(0, 118, 168, 0.24);
+    }
+
+    .drop-title {
+      font-size: 1.15rem;
+      font-weight: 760;
+      margin-bottom: 4px;
+    }
+
+    .drop-note {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .settings {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 650;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.95rem;
+    }
+
+    .hint {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 11px 15px;
+      background: var(--ink);
+      color: #fff;
+      font: inherit;
+      font-weight: 760;
+      cursor: pointer;
+      transition: transform 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 14px 28px rgba(0, 118, 168, 0.22);
+    }
+
+    button.secondary {
+      background: #e8eef6;
+      color: #26364f;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+      box-shadow: none;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status.error {
+      color: var(--bad);
+      font-weight: 700;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      line-height: 1;
+      font-weight: 850;
+      letter-spacing: -0.04em;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 680;
+    }
+
+    .results {
+      min-height: 420px;
+    }
+
+    .empty-state {
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--ink);
+      font-size: 1.08rem;
+      margin-bottom: 4px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .file-name {
+      min-width: 0;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      font-size: 0.88rem;
+    }
+
+    th,
+    td {
+      padding: 12px 13px;
+      border-bottom: 1px solid #eef2f7;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+      color: #536177;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tr.status-low {
+      background: var(--soft-bad);
+    }
+
+    tr.status-check {
+      background: var(--soft-warn);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 820;
+      white-space: nowrap;
+    }
+
+    .pill.ok {
+      background: #e8f4eb;
+      color: var(--good);
+    }
+
+    .pill.low {
+      background: #ffe1de;
+      color: var(--bad);
+    }
+
+    .pill.check {
+      background: #fff0cf;
+      color: var(--warn);
+    }
+
+    .media-cell {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 230px;
+    }
+
+    .thumb {
+      flex: 0 0 auto;
+      width: 54px;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      background: #f1f5f9;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 850;
+      overflow: hidden;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+
+    .path {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.76rem;
+      word-break: break-all;
+    }
+
+    .warning-list {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    .warning-list li {
+      margin: 0 0 3px;
+    }
+
+    .report-note {
+      margin-top: 13px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    @media (max-width: 980px) {
+      header,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      main {
+        width: min(100vw - 24px, 1180px);
+        padding-top: 24px;
+      }
+
+      .settings,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>PPT Media Extractor</h1>
+        <p class="lede">Drop in a PowerPoint to extract embedded images and videos. Low-resolution items are flagged in the report and prefixed in the exported ZIP.</p>
+      </div>
+      <div class="badge">Runs locally in this browser</div>
+    </header>
+
+    <section class="grid">
+      <aside class="card">
+        <div class="card-inner">
+          <h2>Source Deck</h2>
+          <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Choose or drop a PowerPoint file">
+            <input id="fileInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
+            <div>
+              <div class="drop-icon">PPT</div>
+              <div class="drop-title">Drop a .pptx here</div>
+              <div class="drop-note">or click to choose a file</div>
+            </div>
+          </div>
+
+          <div class="settings" aria-label="Resolution settings">
+            <label>
+              Output width
+              <input id="frameWidth" type="number" min="320" max="8192" step="1" value="1920">
+            </label>
+            <label>
+              Output height
+              <input id="frameHeight" type="number" min="240" max="8192" step="1" value="1080">
+            </label>
+            <label>
+              Full-screen min width
+              <input id="minSourceWidth" type="number" min="320" max="8192" step="1" value="1920">
+            </label>
+            <label>
+              Full-screen min height
+              <input id="minSourceHeight" type="number" min="240" max="8192" step="1" value="1080">
+            </label>
+          </div>
+
+          <p class="hint">Items are marked low-res when the media is smaller than its largest on-slide use at the selected output size. Unplaced media is checked against the full-screen minimum.</p>
+
+          <div class="button-row">
+            <button id="analyzeButton" class="primary" disabled>Analyze PowerPoint</button>
+            <button id="downloadButton" class="secondary" disabled>Download ZIP</button>
+          </div>
+          <div id="status" class="status" aria-live="polite">Waiting for a PowerPoint file.</div>
+        </div>
+      </aside>
+
+      <section class="card results">
+        <div class="card-inner">
+          <div id="results">
+            <div class="empty-state">
+              <div>
+                <strong>No deck analyzed yet.</strong>
+                <p>Extracted images, videos, slide references, and warnings will appear here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "bmp", "tif", "tiff", "webp", "svg", "emf", "wmf"]);
+      const VIDEO_EXTENSIONS = new Set(["mp4", "m4v", "mov", "avi", "wmv", "mpg", "mpeg", "webm"]);
+      const EMUS_PER_INCH = 914400;
+      const decoder = new TextDecoder("utf-8");
+      const encoder = new TextEncoder();
+
+      const elements = {
+        dropZone: document.getElementById("dropZone"),
+        fileInput: document.getElementById("fileInput"),
+        analyzeButton: document.getElementById("analyzeButton"),
+        downloadButton: document.getElementById("downloadButton"),
+        status: document.getElementById("status"),
+        results: document.getElementById("results"),
+        frameWidth: document.getElementById("frameWidth"),
+        frameHeight: document.getElementById("frameHeight"),
+        minSourceWidth: document.getElementById("minSourceWidth"),
+        minSourceHeight: document.getElementById("minSourceHeight")
+      };
+
+      let selectedFile = null;
+      let currentPackage = null;
+      const objectUrls = [];
+
+      elements.dropZone.addEventListener("click", function () {
+        elements.fileInput.click();
+      });
+
+      elements.dropZone.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          elements.fileInput.click();
+        }
+      });
+
+      elements.fileInput.addEventListener("change", function () {
+        if (elements.fileInput.files && elements.fileInput.files[0]) {
+          setSelectedFile(elements.fileInput.files[0]);
+        }
+      });
+
+      ["dragenter", "dragover"].forEach(function (eventName) {
+        elements.dropZone.addEventListener(eventName, function (event) {
+          event.preventDefault();
+          elements.dropZone.classList.add("is-dragging");
+        });
+      });
+
+      ["dragleave", "drop"].forEach(function (eventName) {
+        elements.dropZone.addEventListener(eventName, function (event) {
+          event.preventDefault();
+          elements.dropZone.classList.remove("is-dragging");
+        });
+      });
+
+      elements.dropZone.addEventListener("drop", function (event) {
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (file) {
+          setSelectedFile(file);
+        }
+      });
+
+      elements.analyzeButton.addEventListener("click", function () {
+        if (selectedFile) {
+          analyzeSelectedFile();
+        }
+      });
+
+      elements.downloadButton.addEventListener("click", function () {
+        if (!currentPackage || !currentPackage.zipBlob) {
+          return;
+        }
+        downloadBlob(currentPackage.zipBlob, currentPackage.zipName);
+      });
+
+      [elements.frameWidth, elements.frameHeight, elements.minSourceWidth, elements.minSourceHeight].forEach(function (input) {
+        input.addEventListener("change", function () {
+          if (selectedFile) {
+            currentPackage = null;
+            elements.downloadButton.disabled = true;
+            setStatus("Settings changed. Analyze again to refresh warnings.");
+          }
+        });
+      });
+
+      function setSelectedFile(file) {
+        clearObjectUrls();
+        selectedFile = file;
+        currentPackage = null;
+        elements.downloadButton.disabled = true;
+        elements.analyzeButton.disabled = false;
+        setStatus("Ready to analyze " + file.name + ".");
+        renderEmpty("Ready to analyze.", "Click Analyze PowerPoint to extract embedded images and videos.");
+      }
+
+      async function analyzeSelectedFile() {
+        try {
+          clearObjectUrls();
+          setBusy(true);
+          setStatus("Reading PowerPoint package...");
+          const settings = getSettings();
+          const result = await analyzePptx(selectedFile, settings);
+          setStatus("Building ZIP package...");
+          const zipBlob = buildExportZip(result);
+          currentPackage = {
+            result: result,
+            zipBlob: zipBlob,
+            zipName: makeBaseName(selectedFile.name) + "-media-extract.zip"
+          };
+          renderResults(result);
+          elements.downloadButton.disabled = result.items.length === 0;
+          setStatus(result.items.length ? "Done. " + result.items.length + " media file" + plural(result.items.length) + " ready to download." : "Done. No embedded images or videos were found.");
+        } catch (error) {
+          console.error(error);
+          currentPackage = null;
+          elements.downloadButton.disabled = true;
+          setStatus(error && error.message ? error.message : String(error), true);
+          renderEmpty("Could not analyze this deck.", "Check that it is a normal .pptx file and try again.");
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      function setBusy(isBusy) {
+        elements.analyzeButton.disabled = isBusy || !selectedFile;
+        elements.downloadButton.disabled = isBusy || !currentPackage || !currentPackage.zipBlob || currentPackage.result.items.length === 0;
+        elements.dropZone.style.pointerEvents = isBusy ? "none" : "";
+      }
+
+      function setStatus(message, isError) {
+        elements.status.textContent = message;
+        elements.status.classList.toggle("error", Boolean(isError));
+      }
+
+      function getSettings() {
+        return {
+          frameWidth: cleanNumber(elements.frameWidth.value, 1920),
+          frameHeight: cleanNumber(elements.frameHeight.value, 1080),
+          minSourceWidth: cleanNumber(elements.minSourceWidth.value, 1920),
+          minSourceHeight: cleanNumber(elements.minSourceHeight.value, 1080)
+        };
+      }
+
+      function cleanNumber(value, fallback) {
+        const parsed = parseInt(value, 10);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+      }
+
+      async function analyzePptx(file, settings) {
+        const buffer = await file.arrayBuffer();
+        const zip = SimpleZip.fromArrayBuffer(buffer);
+        if (!zip.has("[Content_Types].xml") || !zip.has("ppt/presentation.xml")) {
+          throw new Error("This does not look like a standard .pptx file.");
+        }
+
+        setStatus("Mapping slide references...");
+        const slideContext = await readSlideContext(zip, settings);
+        const mediaPaths = zip.list()
+          .filter(function (path) {
+            return path.indexOf("ppt/media/") === 0 && getCategory(path);
+          })
+          .sort(naturalSort);
+
+        const items = [];
+        const seenHashes = new Map();
+        let index = 0;
+
+        for (const path of mediaPaths) {
+          index += 1;
+          setStatus("Inspecting media " + index + " of " + mediaPaths.length + "...");
+          const bytes = await zip.read(path);
+          const category = getCategory(path);
+          const ext = getExtension(path);
+          const mime = getMimeType(ext, category);
+          const dimensions = category === "image"
+            ? await readImageDimensions(bytes, ext, mime)
+            : await readVideoDimensions(bytes, ext, mime);
+          const hash = await sha1Hex(bytes).catch(function () { return ""; });
+          const usages = slideContext.usageByPath.get(path) || [];
+          const item = makeMediaItem({
+            sourcePath: path,
+            bytes: bytes,
+            category: category,
+            extension: ext,
+            mime: mime,
+            dimensions: dimensions,
+            usages: usages,
+            hash: hash,
+            duplicateOf: hash && seenHashes.has(hash) ? seenHashes.get(hash) : "",
+            settings: settings,
+            slideSize: slideContext.slideSize
+          });
+          if (hash && !seenHashes.has(hash)) {
+            seenHashes.set(hash, path);
+          }
+          items.push(item);
+        }
+
+        assignExportNames(items);
+        const external = slideContext.externalMedia;
+        const htmlReport = buildHtmlReport(file.name, items, settings, external);
+        const csvReport = buildCsvReport(items, external);
+        const sourceName = makeBaseName(file.name);
+
+        return {
+          sourceName: sourceName,
+          fileName: file.name,
+          settings: settings,
+          slideSize: slideContext.slideSize,
+          items: items,
+          externalMedia: external,
+          htmlReport: htmlReport,
+          csvReport: csvReport
+        };
+      }
+
+      async function readSlideContext(zip, settings) {
+        const presentationXml = await zip.text("ppt/presentation.xml");
+        const slideSize = readSlideSize(presentationXml);
+        const slidePaths = zip.list()
+          .filter(function (path) {
+            return /^ppt\/slides\/slide\d+\.xml$/i.test(path);
+          })
+          .sort(function (a, b) {
+            return getSlideNumberFromPath(a) - getSlideNumberFromPath(b);
+          });
+        const usageByPath = new Map();
+        const externalMedia = [];
+        const relsCache = new Map();
+
+        for (const slidePath of slidePaths) {
+          const slideNumber = getSlideNumberFromPath(slidePath);
+          const slideRels = await collectMediaUsagesFromPart(zip, slidePath, slideNumber, "slide", slideSize, settings, usageByPath, externalMedia, relsCache);
+          for (const slideRel of slideRels) {
+            if (!isRelationshipType(slideRel.type, "slideLayout") || (slideRel.targetMode || "").toLowerCase() === "external") {
+              continue;
+            }
+            const layoutPath = normalizePath(joinPath(dirname(slidePath), slideRel.target));
+            const layoutRels = await collectMediaUsagesFromPart(zip, layoutPath, slideNumber, "layout", slideSize, settings, usageByPath, externalMedia, relsCache);
+            for (const layoutRel of layoutRels) {
+              if (!isRelationshipType(layoutRel.type, "slideMaster") || (layoutRel.targetMode || "").toLowerCase() === "external") {
+                continue;
+              }
+              const masterPath = normalizePath(joinPath(dirname(layoutPath), layoutRel.target));
+              await collectMediaUsagesFromPart(zip, masterPath, slideNumber, "master", slideSize, settings, usageByPath, externalMedia, relsCache);
+            }
+          }
+        }
+
+        return {
+          slideSize: slideSize,
+          usageByPath: usageByPath,
+          externalMedia: externalMedia
+        };
+      }
+
+      async function collectMediaUsagesFromPart(zip, partPath, slideNumber, origin, slideSize, settings, usageByPath, externalMedia, relsCache) {
+        if (!zip.has(partPath)) {
+          return [];
+        }
+        const relsPath = relationshipPathForPart(partPath);
+        if (!zip.has(relsPath)) {
+          return [];
+        }
+        const cacheKey = partPath + "|" + slideNumber;
+        if (relsCache.has(cacheKey)) {
+          return relsCache.get(cacheKey);
+        }
+
+        const partXml = await zip.text(partPath);
+        const relsXml = await zip.text(relsPath);
+        const placementsByRid = readPlacementsByRid(partXml, slideSize, settings);
+        const rels = readRelationships(relsXml);
+
+        rels.forEach(function (rel) {
+          const category = getCategory(rel.target);
+          if (!category) {
+            return;
+          }
+          const usage = {
+            slide: slideNumber,
+            rId: rel.id,
+            category: category,
+            target: rel.target,
+            origin: origin,
+            display: placementsByRid.get(rel.id) || null
+          };
+
+          if ((rel.targetMode || "").toLowerCase() === "external") {
+            externalMedia.push(Object.assign({ sourcePath: rel.target }, usage));
+            return;
+          }
+
+          const mediaPath = normalizePath(joinPath(dirname(partPath), rel.target));
+          if (!usageByPath.has(mediaPath)) {
+            usageByPath.set(mediaPath, []);
+          }
+          usageByPath.get(mediaPath).push(usage);
+        });
+
+        relsCache.set(cacheKey, rels);
+        return rels;
+      }
+
+      function relationshipPathForPart(partPath) {
+        return dirname(partPath) + "/_rels/" + basename(partPath) + ".rels";
+      }
+
+      function isRelationshipType(type, name) {
+        return new RegExp("/" + name + "$", "i").test(type || "");
+      }
+
+      function readSlideSize(xml) {
+        const match = xml.match(/<p:sldSz\b[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"/i);
+        if (match) {
+          return {
+            cx: parseInt(match[1], 10),
+            cy: parseInt(match[2], 10)
+          };
+        }
+        return {
+          cx: 12192000,
+          cy: 6858000
+        };
+      }
+
+      function readRelationships(xml) {
+        const doc = new DOMParser().parseFromString(xml, "application/xml");
+        const rels = Array.from(doc.getElementsByTagName("Relationship"));
+        if (rels.length) {
+          return rels.map(function (rel) {
+            return {
+              id: rel.getAttribute("Id") || "",
+              type: rel.getAttribute("Type") || "",
+              target: rel.getAttribute("Target") || "",
+              targetMode: rel.getAttribute("TargetMode") || ""
+            };
+          });
+        }
+
+        return Array.from(xml.matchAll(/<Relationship\b([^>]*)\/?>/gi)).map(function (match) {
+          return {
+            id: readXmlAttribute(match[1], "Id"),
+            type: readXmlAttribute(match[1], "Type"),
+            target: readXmlAttribute(match[1], "Target"),
+            targetMode: readXmlAttribute(match[1], "TargetMode")
+          };
+        });
+      }
+
+      function readXmlAttribute(text, name) {
+        const match = text.match(new RegExp("\\b" + name + "=\"([^\"]*)\"", "i"));
+        return match ? decodeXml(match[1]) : "";
+      }
+
+      function readPlacementsByRid(slideXml, slideSize, settings) {
+        const placements = new Map();
+        const picBlocks = slideXml.match(/<p:pic\b[\s\S]*?<\/p:pic>/gi) || [];
+        picBlocks.forEach(function (block) {
+          const extMatch = block.match(/<a:ext\b[^>]*\bcx="(\d+)"[^>]*\bcy="(\d+)"/i);
+          const display = extMatch ? makeDisplaySize(parseInt(extMatch[1], 10), parseInt(extMatch[2], 10), slideSize, settings) : null;
+          const ridMatches = Array.from(block.matchAll(/\br:(?:embed|link)="([^"]+)"/gi));
+          ridMatches.forEach(function (ridMatch) {
+            if (!display) {
+              return;
+            }
+            const rid = ridMatch[1];
+            const existing = placements.get(rid);
+            if (!existing || display.area > existing.area) {
+              placements.set(rid, display);
+            }
+          });
+        });
+        return placements;
+      }
+
+      function makeDisplaySize(cx, cy, slideSize, settings) {
+        const width = Math.round((cx / slideSize.cx) * settings.frameWidth);
+        const height = Math.round((cy / slideSize.cy) * settings.frameHeight);
+        const inchesWide = cx / EMUS_PER_INCH;
+        const inchesHigh = cy / EMUS_PER_INCH;
+        return {
+          width: width,
+          height: height,
+          area: width * height,
+          cx: cx,
+          cy: cy,
+          inchesWide: inchesWide,
+          inchesHigh: inchesHigh
+        };
+      }
+
+      function makeMediaItem(options) {
+        const displays = options.usages
+          .map(function (usage) { return usage.display; })
+          .filter(Boolean);
+        const largestDisplay = displays.reduce(function (best, display) {
+          return !best || display.area > best.area ? display : best;
+        }, null);
+        const dimensions = options.dimensions;
+        const warnings = [];
+        let status = "ok";
+
+        if (!dimensions || !dimensions.width || !dimensions.height) {
+          status = "check";
+          warnings.push("Could not read " + options.category + " dimensions; review manually.");
+        } else if (largestDisplay) {
+          const widthShortfall = dimensions.width < largestDisplay.width;
+          const heightShortfall = dimensions.height < largestDisplay.height;
+          if (widthShortfall || heightShortfall) {
+            status = "low";
+            warnings.push("Low resolution for largest on-slide use: " + dimensions.width + "x" + dimensions.height + " source displayed at about " + largestDisplay.width + "x" + largestDisplay.height + " in a " + options.settings.frameWidth + "x" + options.settings.frameHeight + " export.");
+          }
+        } else if (dimensions.width < options.settings.minSourceWidth || dimensions.height < options.settings.minSourceHeight) {
+          status = "low";
+          warnings.push("Low source resolution for unplaced media: " + dimensions.width + "x" + dimensions.height + " is below the full-screen minimum of " + options.settings.minSourceWidth + "x" + options.settings.minSourceHeight + ".");
+        }
+
+        if (options.duplicateOf) {
+          warnings.push("Duplicate of " + options.duplicateOf + ".");
+          if (status === "ok") {
+            status = "check";
+          }
+        }
+
+        return {
+          sourcePath: options.sourcePath,
+          bytes: options.bytes,
+          category: options.category,
+          extension: options.extension,
+          mime: options.mime,
+          dimensions: dimensions,
+          usages: options.usages,
+          slides: uniqueSorted(options.usages.map(function (usage) { return usage.slide; })),
+          largestDisplay: largestDisplay,
+          hash: options.hash,
+          duplicateOf: options.duplicateOf,
+          warnings: warnings,
+          status: status,
+          exportName: ""
+        };
+      }
+
+      function assignExportNames(items) {
+        const used = new Map();
+        items.forEach(function (item) {
+          const statusPrefix = item.status === "low" ? "LOW_RES__" : item.status === "check" ? "CHECK_SIZE__" : "";
+          const slidePrefix = item.slides.length ? "slides-" + compactSlideList(item.slides) + "__" : "unmapped__";
+          const sourceBase = stripExtension(basename(item.sourcePath));
+          const dimSuffix = item.dimensions ? "__" + item.dimensions.width + "x" + item.dimensions.height : "";
+          const folder = item.category === "video" ? "videos" : "images";
+          const baseName = sanitizeFileName(statusPrefix + slidePrefix + sourceBase + dimSuffix);
+          const extension = item.extension ? "." + item.extension : "";
+          let candidate = folder + "/" + baseName + extension;
+          let count = 2;
+          while (used.has(candidate)) {
+            candidate = folder + "/" + baseName + "-" + count + extension;
+            count += 1;
+          }
+          used.set(candidate, true);
+          item.exportName = candidate;
+        });
+      }
+
+      function buildExportZip(result) {
+        const files = [];
+        result.items.forEach(function (item) {
+          files.push({
+            name: item.exportName,
+            data: item.bytes
+          });
+        });
+        files.push({
+          name: "ppt-media-report.html",
+          data: result.htmlReport
+        });
+        files.push({
+          name: "ppt-media-report.csv",
+          data: result.csvReport
+        });
+        return makeZipBlob(files);
+      }
+
+      function renderResults(result) {
+        const lowCount = result.items.filter(function (item) { return item.status === "low"; }).length;
+        const checkCount = result.items.filter(function (item) { return item.status === "check"; }).length;
+        const imageCount = result.items.filter(function (item) { return item.category === "image"; }).length;
+        const videoCount = result.items.filter(function (item) { return item.category === "video"; }).length;
+        const rows = result.items.map(renderItemRow).join("");
+        const table = rows
+          ? "<div class=\"table-wrap\"><table><thead><tr><th>Status</th><th>Media</th><th>Slides</th><th>Source Size</th><th>Largest Use</th><th>Export Name</th><th>Warnings</th></tr></thead><tbody>" + rows + "</tbody></table></div>"
+          : "<div class=\"empty-state\"><div><strong>No embedded media found.</strong><p>This deck did not contain extractable image or video files under <span class=\"path\">ppt/media</span>.</p></div></div>";
+
+        elements.results.innerHTML = [
+          "<div class=\"toolbar\"><div class=\"file-name\" title=\"" + escapeHtml(result.fileName) + "\">" + escapeHtml(result.fileName) + "</div><div class=\"badge\">" + result.settings.frameWidth + "x" + result.settings.frameHeight + " check</div></div>",
+          "<div class=\"summary\">",
+          renderStat(result.items.length, "Media files"),
+          renderStat(imageCount, "Images"),
+          renderStat(videoCount, "Videos"),
+          renderStat(lowCount + checkCount, "Need review"),
+          "</div>",
+          table,
+          result.externalMedia.length ? "<p class=\"report-note\">" + result.externalMedia.length + " external media reference" + plural(result.externalMedia.length) + " found. External media cannot be extracted from the .pptx package.</p>" : "",
+          "<p class=\"report-note\">The downloaded ZIP includes the original files plus HTML and CSV reports.</p>"
+        ].join("");
+      }
+
+      function renderStat(value, label) {
+        return "<div class=\"stat\"><div class=\"stat-value\">" + value + "</div><div class=\"stat-label\">" + escapeHtml(label) + "</div></div>";
+      }
+
+      function renderItemRow(item) {
+        const statusLabel = item.status === "low" ? "Low-res" : item.status === "check" ? "Check" : "OK";
+        const dimensions = item.dimensions ? item.dimensions.width + "x" + item.dimensions.height : "Unknown";
+        const largest = item.largestDisplay ? item.largestDisplay.width + "x" + item.largestDisplay.height : "Not placed";
+        const warnings = item.warnings.length
+          ? "<ul class=\"warning-list\">" + item.warnings.map(function (warning) { return "<li>" + escapeHtml(warning) + "</li>"; }).join("") + "</ul>"
+          : "<span class=\"path\">None</span>";
+        return [
+          "<tr class=\"status-" + item.status + "\">",
+          "<td><span class=\"pill " + item.status + "\">" + statusLabel + "</span></td>",
+          "<td><div class=\"media-cell\">" + renderThumb(item) + "<div><strong>" + escapeHtml(basename(item.sourcePath)) + "</strong><div class=\"path\">" + escapeHtml(item.sourcePath) + "</div></div></div></td>",
+          "<td>" + (item.slides.length ? escapeHtml(compactSlideList(item.slides)) : "<span class=\"path\">Unmapped</span>") + "</td>",
+          "<td>" + escapeHtml(dimensions) + "</td>",
+          "<td>" + escapeHtml(largest) + "</td>",
+          "<td><span class=\"path\">" + escapeHtml(item.exportName) + "</span></td>",
+          "<td>" + warnings + "</td>",
+          "</tr>"
+        ].join("");
+      }
+
+      function renderThumb(item) {
+        if (item.category === "image" && canPreviewImage(item.extension)) {
+          const url = URL.createObjectURL(new Blob([item.bytes], { type: item.mime || "application/octet-stream" }));
+          objectUrls.push(url);
+          return "<div class=\"thumb\"><img src=\"" + url + "\" alt=\"\"></div>";
+        }
+        return "<div class=\"thumb\">" + (item.category === "video" ? "VID" : item.extension.toUpperCase()) + "</div>";
+      }
+
+      function renderEmpty(title, body) {
+        elements.results.innerHTML = "<div class=\"empty-state\"><div><strong>" + escapeHtml(title) + "</strong><p>" + escapeHtml(body) + "</p></div></div>";
+      }
+
+      function buildHtmlReport(fileName, items, settings, externalMedia) {
+        const lowCount = items.filter(function (item) { return item.status === "low"; }).length;
+        const checkCount = items.filter(function (item) { return item.status === "check"; }).length;
+        const rows = items.map(function (item) {
+          return [
+            "<tr>",
+            "<td>" + escapeHtml(item.status.toUpperCase()) + "</td>",
+            "<td>" + escapeHtml(item.category) + "</td>",
+            "<td>" + escapeHtml(item.sourcePath) + "</td>",
+            "<td>" + escapeHtml(item.exportName) + "</td>",
+            "<td>" + escapeHtml(item.slides.length ? compactSlideList(item.slides) : "Unmapped") + "</td>",
+            "<td>" + escapeHtml(item.dimensions ? item.dimensions.width + "x" + item.dimensions.height : "Unknown") + "</td>",
+            "<td>" + escapeHtml(item.largestDisplay ? item.largestDisplay.width + "x" + item.largestDisplay.height : "Not placed") + "</td>",
+            "<td>" + escapeHtml(item.warnings.join(" ")) + "</td>",
+            "</tr>"
+          ].join("");
+        }).join("");
+
+        const externalRows = externalMedia.length
+          ? "<h2>External media references</h2><ul>" + externalMedia.map(function (item) {
+              return "<li>Slide " + item.slide + ": " + escapeHtml(item.sourcePath) + "</li>";
+            }).join("") + "</ul>"
+          : "";
+
+        return "<!doctype html><html><head><meta charset=\"utf-8\"><title>PPT Media Report</title><style>body{font-family:Inter,Arial,sans-serif;margin:32px;color:#172033}h1{margin-bottom:4px}p{color:#647086}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #d9e0ea;padding:8px;text-align:left;vertical-align:top}th{background:#f3f6fa}.summary{display:flex;gap:12px;margin:18px 0}.stat{border:1px solid #d9e0ea;border-radius:12px;padding:12px 14px}.value{font-weight:800;font-size:24px}</style></head><body><h1>PPT Media Report</h1><p>Source: " + escapeHtml(fileName) + "</p><p>Checked against " + settings.frameWidth + "x" + settings.frameHeight + " output. Unplaced media checked against " + settings.minSourceWidth + "x" + settings.minSourceHeight + " full-screen minimum.</p><div class=\"summary\"><div class=\"stat\"><div class=\"value\">" + items.length + "</div><div>Total media</div></div><div class=\"stat\"><div class=\"value\">" + lowCount + "</div><div>Low-res</div></div><div class=\"stat\"><div class=\"value\">" + checkCount + "</div><div>Check manually</div></div></div><table><thead><tr><th>Status</th><th>Type</th><th>Source</th><th>Exported As</th><th>Slides</th><th>Source Size</th><th>Largest Use</th><th>Warnings</th></tr></thead><tbody>" + rows + "</tbody></table>" + externalRows + "</body></html>";
+      }
+
+      function buildCsvReport(items, externalMedia) {
+        const rows = [[
+          "status",
+          "type",
+          "source_path",
+          "export_name",
+          "slides",
+          "source_width",
+          "source_height",
+          "largest_use_width",
+          "largest_use_height",
+          "warnings"
+        ]];
+        items.forEach(function (item) {
+          rows.push([
+            item.status,
+            item.category,
+            item.sourcePath,
+            item.exportName,
+            item.slides.length ? compactSlideList(item.slides) : "Unmapped",
+            item.dimensions ? item.dimensions.width : "",
+            item.dimensions ? item.dimensions.height : "",
+            item.largestDisplay ? item.largestDisplay.width : "",
+            item.largestDisplay ? item.largestDisplay.height : "",
+            item.warnings.join(" ")
+          ]);
+        });
+        externalMedia.forEach(function (item) {
+          rows.push([
+            "external",
+            item.category,
+            item.sourcePath,
+            "",
+            String(item.slide),
+            "",
+            "",
+            item.display ? item.display.width : "",
+            item.display ? item.display.height : "",
+            "External media reference cannot be extracted from the .pptx package."
+          ]);
+        });
+        return rows.map(function (row) {
+          return row.map(csvCell).join(",");
+        }).join("\n") + "\n";
+      }
+
+      function csvCell(value) {
+        const text = value == null ? "" : String(value);
+        return "\"" + text.replace(/"/g, "\"\"") + "\"";
+      }
+
+      async function readImageDimensions(bytes, ext, mime) {
+        const parsed = parseImageDimensions(bytes, ext);
+        if (parsed) {
+          return parsed;
+        }
+        if (canPreviewImage(ext)) {
+          return readImageElementDimensions(bytes, mime).catch(function () { return null; });
+        }
+        return null;
+      }
+
+      function parseImageDimensions(bytes, ext) {
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        if (bytes.length >= 24 && bytes[0] === 0x89 && ascii(bytes, 1, 3) === "PNG") {
+          return { width: view.getUint32(16, false), height: view.getUint32(20, false) };
+        }
+        if (bytes.length >= 10 && ascii(bytes, 0, 3) === "GIF") {
+          return { width: view.getUint16(6, true), height: view.getUint16(8, true) };
+        }
+        if (bytes.length >= 26 && ascii(bytes, 0, 2) === "BM") {
+          return { width: Math.abs(view.getInt32(18, true)), height: Math.abs(view.getInt32(22, true)) };
+        }
+        if (bytes.length >= 12 && ascii(bytes, 0, 4) === "RIFF" && ascii(bytes, 8, 4) === "WEBP") {
+          return parseWebpDimensions(bytes, view);
+        }
+        if (bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8) {
+          return parseJpegDimensions(bytes, view);
+        }
+        if (ext === "svg") {
+          return parseSvgDimensions(decoder.decode(bytes.slice(0, Math.min(bytes.length, 20000))));
+        }
+        if (ext === "tif" || ext === "tiff") {
+          return parseTiffDimensions(bytes, view);
+        }
+        return null;
+      }
+
+      function parseJpegDimensions(bytes, view) {
+        let offset = 2;
+        while (offset + 9 < bytes.length) {
+          if (bytes[offset] !== 0xff) {
+            offset += 1;
+            continue;
+          }
+          const marker = bytes[offset + 1];
+          const length = view.getUint16(offset + 2, false);
+          if (length < 2) {
+            return null;
+          }
+          if ((marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) || (marker >= 0xc9 && marker <= 0xcb) || (marker >= 0xcd && marker <= 0xcf)) {
+            return {
+              width: view.getUint16(offset + 7, false),
+              height: view.getUint16(offset + 5, false)
+            };
+          }
+          offset += 2 + length;
+        }
+        return null;
+      }
+
+      function parseWebpDimensions(bytes, view) {
+        const chunk = ascii(bytes, 12, 4);
+        if (chunk === "VP8X" && bytes.length >= 30) {
+          return {
+            width: 1 + bytes[24] + (bytes[25] << 8) + (bytes[26] << 16),
+            height: 1 + bytes[27] + (bytes[28] << 8) + (bytes[29] << 16)
+          };
+        }
+        if (chunk === "VP8 " && bytes.length >= 30) {
+          return {
+            width: view.getUint16(26, true) & 0x3fff,
+            height: view.getUint16(28, true) & 0x3fff
+          };
+        }
+        if (chunk === "VP8L" && bytes.length >= 25) {
+          const b0 = bytes[21];
+          const b1 = bytes[22];
+          const b2 = bytes[23];
+          const b3 = bytes[24];
+          return {
+            width: 1 + (((b1 & 0x3f) << 8) | b0),
+            height: 1 + (((b3 & 0x0f) << 10) | (b2 << 2) | ((b1 & 0xc0) >> 6))
+          };
+        }
+        return null;
+      }
+
+      function parseSvgDimensions(text) {
+        const svgMatch = text.match(/<svg\b[^>]*>/i);
+        if (!svgMatch) {
+          return null;
+        }
+        const tag = svgMatch[0];
+        const width = parseSvgLength(readXmlAttribute(tag, "width"));
+        const height = parseSvgLength(readXmlAttribute(tag, "height"));
+        if (width && height) {
+          return { width: Math.round(width), height: Math.round(height) };
+        }
+        const viewBox = readXmlAttribute(tag, "viewBox");
+        const parts = viewBox.trim().split(/[\s,]+/).map(Number);
+        if (parts.length === 4 && parts.every(Number.isFinite)) {
+          return { width: Math.round(Math.abs(parts[2])), height: Math.round(Math.abs(parts[3])) };
+        }
+        return null;
+      }
+
+      function parseSvgLength(value) {
+        if (!value) {
+          return null;
+        }
+        const match = String(value).trim().match(/^([\d.]+)(px|pt|in|cm|mm)?$/i);
+        if (!match) {
+          return null;
+        }
+        const number = parseFloat(match[1]);
+        const unit = (match[2] || "px").toLowerCase();
+        if (!Number.isFinite(number)) {
+          return null;
+        }
+        if (unit === "px") return number;
+        if (unit === "pt") return number * (96 / 72);
+        if (unit === "in") return number * 96;
+        if (unit === "cm") return number * (96 / 2.54);
+        if (unit === "mm") return number * (96 / 25.4);
+        return null;
+      }
+
+      function parseTiffDimensions(bytes, view) {
+        const little = ascii(bytes, 0, 2) === "II";
+        const big = ascii(bytes, 0, 2) === "MM";
+        if (!little && !big) {
+          return null;
+        }
+        const le = little;
+        const magic = view.getUint16(2, le);
+        if (magic !== 42) {
+          return null;
+        }
+        const ifd = view.getUint32(4, le);
+        if (ifd + 2 > bytes.length) {
+          return null;
+        }
+        const count = view.getUint16(ifd, le);
+        let width = null;
+        let height = null;
+        for (let i = 0; i < count; i += 1) {
+          const entry = ifd + 2 + i * 12;
+          if (entry + 12 > bytes.length) {
+            break;
+          }
+          const tag = view.getUint16(entry, le);
+          const type = view.getUint16(entry + 2, le);
+          const values = view.getUint32(entry + 4, le);
+          let value = null;
+          if (values === 1 && (type === 3 || type === 4)) {
+            value = type === 3 ? view.getUint16(entry + 8, le) : view.getUint32(entry + 8, le);
+          }
+          if (tag === 256) width = value;
+          if (tag === 257) height = value;
+        }
+        return width && height ? { width: width, height: height } : null;
+      }
+
+      function readImageElementDimensions(bytes, mime) {
+        return new Promise(function (resolve, reject) {
+          const url = URL.createObjectURL(new Blob([bytes], { type: mime || "image/*" }));
+          const img = new Image();
+          const timer = setTimeout(function () {
+            URL.revokeObjectURL(url);
+            reject(new Error("Image metadata timeout"));
+          }, 2500);
+          img.onload = function () {
+            clearTimeout(timer);
+            URL.revokeObjectURL(url);
+            resolve({ width: img.naturalWidth, height: img.naturalHeight });
+          };
+          img.onerror = function () {
+            clearTimeout(timer);
+            URL.revokeObjectURL(url);
+            reject(new Error("Image could not be decoded"));
+          };
+          img.src = url;
+        });
+      }
+
+      async function readVideoDimensions(bytes, ext, mime) {
+        const parsed = parseVideoDimensions(bytes, ext);
+        if (parsed) {
+          return parsed;
+        }
+        return readVideoElementDimensions(bytes, mime).catch(function () { return null; });
+      }
+
+      function parseVideoDimensions(bytes, ext) {
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        if (["mp4", "m4v", "mov"].indexOf(ext) !== -1) {
+          return parseMp4Dimensions(bytes, view);
+        }
+        if (ext === "avi") {
+          return parseAviDimensions(bytes, view);
+        }
+        return null;
+      }
+
+      function parseMp4Dimensions(bytes, view) {
+        let best = null;
+        walkMp4Boxes(view, 0, bytes.length, function (box) {
+          if (box.type !== "tkhd") {
+            return;
+          }
+          if (box.end - box.start < 24) {
+            return;
+          }
+          const width = Math.round(view.getUint32(box.end - 8, false) / 65536);
+          const height = Math.round(view.getUint32(box.end - 4, false) / 65536);
+          if (width > 0 && height > 0 && (!best || width * height > best.width * best.height)) {
+            best = { width: width, height: height };
+          }
+        });
+        return best;
+      }
+
+      function walkMp4Boxes(view, start, end, callback) {
+        const containers = new Set(["moov", "trak", "mdia", "minf", "stbl", "edts"]);
+        let offset = start;
+        while (offset + 8 <= end) {
+          let size = view.getUint32(offset, false);
+          const type = readAsciiFromView(view, offset + 4, 4);
+          let header = 8;
+          if (size === 1 && offset + 16 <= end) {
+            const high = view.getUint32(offset + 8, false);
+            const low = view.getUint32(offset + 12, false);
+            size = high * 4294967296 + low;
+            header = 16;
+          } else if (size === 0) {
+            size = end - offset;
+          }
+          if (!size || offset + size > end || size < header) {
+            break;
+          }
+          const box = {
+            start: offset,
+            end: offset + size,
+            payloadStart: offset + header,
+            type: type
+          };
+          callback(box);
+          if (containers.has(type)) {
+            walkMp4Boxes(view, box.payloadStart, box.end, callback);
+          }
+          offset += size;
+        }
+      }
+
+      function parseAviDimensions(bytes, view) {
+        for (let i = 0; i + 48 < bytes.length; i += 1) {
+          if (ascii(bytes, i, 4) === "avih") {
+            const size = view.getUint32(i + 4, true);
+            if (size >= 40 && i + 8 + size <= bytes.length) {
+              const width = view.getUint32(i + 8 + 32, true);
+              const height = view.getUint32(i + 8 + 36, true);
+              if (width && height) {
+                return { width: width, height: height };
+              }
+            }
+          }
+        }
+        return null;
+      }
+
+      function readVideoElementDimensions(bytes, mime) {
+        return new Promise(function (resolve, reject) {
+          const url = URL.createObjectURL(new Blob([bytes], { type: mime || "video/*" }));
+          const video = document.createElement("video");
+          const timer = setTimeout(function () {
+            URL.revokeObjectURL(url);
+            reject(new Error("Video metadata timeout"));
+          }, 3500);
+          video.preload = "metadata";
+          video.onloadedmetadata = function () {
+            clearTimeout(timer);
+            URL.revokeObjectURL(url);
+            if (video.videoWidth && video.videoHeight) {
+              resolve({ width: video.videoWidth, height: video.videoHeight });
+            } else {
+              reject(new Error("No video dimensions"));
+            }
+          };
+          video.onerror = function () {
+            clearTimeout(timer);
+            URL.revokeObjectURL(url);
+            reject(new Error("Video could not be decoded"));
+          };
+          video.src = url;
+        });
+      }
+
+      class SimpleZip {
+        constructor(buffer, entries) {
+          this.buffer = buffer;
+          this.bytes = new Uint8Array(buffer);
+          this.view = new DataView(buffer);
+          this.entries = entries;
+          this.entryMap = new Map(entries.map(function (entry) { return [entry.name, entry]; }));
+        }
+
+        static fromArrayBuffer(buffer) {
+          const view = new DataView(buffer);
+          const bytes = new Uint8Array(buffer);
+          const eocdOffset = findEndOfCentralDirectory(bytes);
+          if (eocdOffset < 0) {
+            throw new Error("Could not find the PowerPoint ZIP directory.");
+          }
+          const totalEntries = view.getUint16(eocdOffset + 10, true);
+          const centralDirectorySize = view.getUint32(eocdOffset + 12, true);
+          const centralDirectoryOffset = view.getUint32(eocdOffset + 16, true);
+          if (centralDirectoryOffset + centralDirectorySize > bytes.length) {
+            throw new Error("This ZIP package is not supported by the first-version extractor.");
+          }
+
+          const entries = [];
+          let offset = centralDirectoryOffset;
+          for (let i = 0; i < totalEntries; i += 1) {
+            if (view.getUint32(offset, true) !== 0x02014b50) {
+              throw new Error("Invalid ZIP central directory.");
+            }
+            const flags = view.getUint16(offset + 8, true);
+            const method = view.getUint16(offset + 10, true);
+            const compressedSize = view.getUint32(offset + 20, true);
+            const uncompressedSize = view.getUint32(offset + 24, true);
+            const nameLength = view.getUint16(offset + 28, true);
+            const extraLength = view.getUint16(offset + 30, true);
+            const commentLength = view.getUint16(offset + 32, true);
+            const localHeaderOffset = view.getUint32(offset + 42, true);
+            const nameBytes = bytes.slice(offset + 46, offset + 46 + nameLength);
+            const name = decoder.decode(nameBytes);
+            entries.push({
+              name: name,
+              flags: flags,
+              method: method,
+              compressedSize: compressedSize,
+              uncompressedSize: uncompressedSize,
+              localHeaderOffset: localHeaderOffset,
+              isDirectory: /\/$/.test(name)
+            });
+            offset += 46 + nameLength + extraLength + commentLength;
+          }
+          return new SimpleZip(buffer, entries);
+        }
+
+        list() {
+          return this.entries.filter(function (entry) { return !entry.isDirectory; }).map(function (entry) { return entry.name; });
+        }
+
+        has(path) {
+          return this.entryMap.has(path);
+        }
+
+        async text(path) {
+          return decoder.decode(await this.read(path));
+        }
+
+        async read(path) {
+          const entry = this.entryMap.get(path);
+          if (!entry) {
+            throw new Error("Missing ZIP entry: " + path);
+          }
+          const localOffset = entry.localHeaderOffset;
+          if (this.view.getUint32(localOffset, true) !== 0x04034b50) {
+            throw new Error("Invalid ZIP local header for " + path + ".");
+          }
+          const nameLength = this.view.getUint16(localOffset + 26, true);
+          const extraLength = this.view.getUint16(localOffset + 28, true);
+          const dataStart = localOffset + 30 + nameLength + extraLength;
+          const compressed = this.bytes.slice(dataStart, dataStart + entry.compressedSize);
+          if (entry.method === 0) {
+            return compressed;
+          }
+          if (entry.method === 8) {
+            return inflateRaw(compressed, entry.uncompressedSize);
+          }
+          throw new Error("Unsupported ZIP compression method " + entry.method + " for " + path + ".");
+        }
+      }
+
+      function findEndOfCentralDirectory(bytes) {
+        const min = Math.max(0, bytes.length - 22 - 65535);
+        for (let i = bytes.length - 22; i >= min; i -= 1) {
+          if (bytes[i] === 0x50 && bytes[i + 1] === 0x4b && bytes[i + 2] === 0x05 && bytes[i + 3] === 0x06) {
+            return i;
+          }
+        }
+        return -1;
+      }
+
+      async function inflateRaw(bytes, expectedSize) {
+        if (typeof DecompressionStream !== "function") {
+          throw new Error("This browser cannot decompress PowerPoint files. Try current Chrome, Edge, or Safari.");
+        }
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        const buffer = await new Response(stream).arrayBuffer();
+        const inflated = new Uint8Array(buffer);
+        if (expectedSize && inflated.length !== expectedSize) {
+          return inflated.slice(0);
+        }
+        return inflated;
+      }
+
+      function makeZipBlob(files) {
+        const chunks = [];
+        const central = [];
+        let offset = 0;
+        const now = new Date();
+        const dos = makeDosDateTime(now);
+
+        files.forEach(function (file) {
+          const data = typeof file.data === "string" ? encoder.encode(file.data) : file.data;
+          const nameBytes = encoder.encode(file.name);
+          const crc = crc32(data);
+          const localHeader = new Uint8Array(30 + nameBytes.length);
+          const localView = new DataView(localHeader.buffer);
+          localView.setUint32(0, 0x04034b50, true);
+          localView.setUint16(4, 20, true);
+          localView.setUint16(6, 0x0800, true);
+          localView.setUint16(8, 0, true);
+          localView.setUint16(10, dos.time, true);
+          localView.setUint16(12, dos.date, true);
+          localView.setUint32(14, crc, true);
+          localView.setUint32(18, data.length, true);
+          localView.setUint32(22, data.length, true);
+          localView.setUint16(26, nameBytes.length, true);
+          localHeader.set(nameBytes, 30);
+          chunks.push(localHeader, data);
+
+          central.push({
+            nameBytes: nameBytes,
+            crc: crc,
+            size: data.length,
+            offset: offset,
+            dos: dos
+          });
+          offset += localHeader.length + data.length;
+        });
+
+        const centralStart = offset;
+        central.forEach(function (entry) {
+          const header = new Uint8Array(46 + entry.nameBytes.length);
+          const view = new DataView(header.buffer);
+          view.setUint32(0, 0x02014b50, true);
+          view.setUint16(4, 20, true);
+          view.setUint16(6, 20, true);
+          view.setUint16(8, 0x0800, true);
+          view.setUint16(10, 0, true);
+          view.setUint16(12, entry.dos.time, true);
+          view.setUint16(14, entry.dos.date, true);
+          view.setUint32(16, entry.crc, true);
+          view.setUint32(20, entry.size, true);
+          view.setUint32(24, entry.size, true);
+          view.setUint16(28, entry.nameBytes.length, true);
+          view.setUint16(30, 0, true);
+          view.setUint16(32, 0, true);
+          view.setUint16(34, 0, true);
+          view.setUint16(36, 0, true);
+          view.setUint32(38, 0, true);
+          view.setUint32(42, entry.offset, true);
+          header.set(entry.nameBytes, 46);
+          chunks.push(header);
+          offset += header.length;
+        });
+
+        const centralSize = offset - centralStart;
+        const eocd = new Uint8Array(22);
+        const eocdView = new DataView(eocd.buffer);
+        eocdView.setUint32(0, 0x06054b50, true);
+        eocdView.setUint16(8, central.length, true);
+        eocdView.setUint16(10, central.length, true);
+        eocdView.setUint32(12, centralSize, true);
+        eocdView.setUint32(16, centralStart, true);
+        chunks.push(eocd);
+
+        return new Blob(chunks, { type: "application/zip" });
+      }
+
+      function makeDosDateTime(date) {
+        return {
+          time: (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2),
+          date: ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate()
+        };
+      }
+
+      let crcTable = null;
+
+      function crc32(bytes) {
+        if (!crcTable) {
+          crcTable = new Uint32Array(256);
+          for (let i = 0; i < 256; i += 1) {
+            let c = i;
+            for (let k = 0; k < 8; k += 1) {
+              c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+            }
+            crcTable[i] = c >>> 0;
+          }
+        }
+        let crc = 0xffffffff;
+        for (let i = 0; i < bytes.length; i += 1) {
+          crc = crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+        }
+        return (crc ^ 0xffffffff) >>> 0;
+      }
+
+      async function sha1Hex(bytes) {
+        if (typeof crypto === "undefined" || !crypto.subtle) {
+          return "";
+        }
+        const hashBuffer = await crypto.subtle.digest("SHA-1", bytes);
+        return Array.from(new Uint8Array(hashBuffer)).map(function (byte) {
+          return byte.toString(16).padStart(2, "0");
+        }).join("");
+      }
+
+      function getCategory(path) {
+        const extension = getExtension(path);
+        if (IMAGE_EXTENSIONS.has(extension)) {
+          return "image";
+        }
+        if (VIDEO_EXTENSIONS.has(extension)) {
+          return "video";
+        }
+        return "";
+      }
+
+      function getExtension(path) {
+        const match = String(path).toLowerCase().match(/\.([a-z0-9]+)(?:[?#].*)?$/);
+        return match ? match[1] : "";
+      }
+
+      function getMimeType(ext, category) {
+        const map = {
+          png: "image/png",
+          jpg: "image/jpeg",
+          jpeg: "image/jpeg",
+          gif: "image/gif",
+          bmp: "image/bmp",
+          tif: "image/tiff",
+          tiff: "image/tiff",
+          webp: "image/webp",
+          svg: "image/svg+xml",
+          mp4: "video/mp4",
+          m4v: "video/mp4",
+          mov: "video/quicktime",
+          avi: "video/x-msvideo",
+          wmv: "video/x-ms-wmv",
+          webm: "video/webm",
+          mpg: "video/mpeg",
+          mpeg: "video/mpeg"
+        };
+        return map[ext] || (category === "image" ? "image/*" : category === "video" ? "video/*" : "application/octet-stream");
+      }
+
+      function canPreviewImage(ext) {
+        return ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp"].indexOf(ext) !== -1;
+      }
+
+      function compactSlideList(slides) {
+        const sorted = uniqueSorted(slides);
+        if (!sorted.length) {
+          return "";
+        }
+        const ranges = [];
+        let start = sorted[0];
+        let previous = sorted[0];
+        for (let i = 1; i <= sorted.length; i += 1) {
+          const current = sorted[i];
+          if (current === previous + 1) {
+            previous = current;
+            continue;
+          }
+          ranges.push(start === previous ? String(start).padStart(3, "0") : String(start).padStart(3, "0") + "-" + String(previous).padStart(3, "0"));
+          start = current;
+          previous = current;
+        }
+        return ranges.join("-");
+      }
+
+      function uniqueSorted(values) {
+        return Array.from(new Set(values.filter(function (value) { return Number.isFinite(value); }))).sort(function (a, b) { return a - b; });
+      }
+
+      function naturalSort(a, b) {
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+      }
+
+      function getSlideNumberFromPath(path) {
+        const match = path.match(/slide(\d+)\.xml$/i);
+        return match ? parseInt(match[1], 10) : 0;
+      }
+
+      function dirname(path) {
+        const index = path.lastIndexOf("/");
+        return index === -1 ? "" : path.slice(0, index);
+      }
+
+      function basename(path) {
+        const index = path.lastIndexOf("/");
+        return index === -1 ? path : path.slice(index + 1);
+      }
+
+      function stripExtension(path) {
+        return path.replace(/\.[^.]+$/, "");
+      }
+
+      function makeBaseName(path) {
+        return sanitizeFileName(stripExtension(basename(path))) || "powerpoint";
+      }
+
+      function joinPath(base, target) {
+        if (/^\//.test(target)) {
+          return target.slice(1);
+        }
+        return base ? base + "/" + target : target;
+      }
+
+      function normalizePath(path) {
+        const parts = [];
+        path.split("/").forEach(function (part) {
+          if (!part || part === ".") {
+            return;
+          }
+          if (part === "..") {
+            parts.pop();
+          } else {
+            parts.push(part);
+          }
+        });
+        return parts.join("/");
+      }
+
+      function sanitizeFileName(name) {
+        return String(name)
+          .replace(/[\\/:*?"<>|]+/g, "-")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "")
+          .slice(0, 150);
+      }
+
+      function ascii(bytes, start, length) {
+        let value = "";
+        for (let i = start; i < start + length && i < bytes.length; i += 1) {
+          value += String.fromCharCode(bytes[i]);
+        }
+        return value;
+      }
+
+      function readAsciiFromView(view, start, length) {
+        let value = "";
+        for (let i = 0; i < length; i += 1) {
+          value += String.fromCharCode(view.getUint8(start + i));
+        }
+        return value;
+      }
+
+      function decodeXml(value) {
+        return String(value)
+          .replace(/&quot;/g, "\"")
+          .replace(/&apos;/g, "'")
+          .replace(/&gt;/g, ">")
+          .replace(/&lt;/g, "<")
+          .replace(/&amp;/g, "&");
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function plural(count) {
+        return count === 1 ? "" : "s";
+      }
+
+      function downloadBlob(blob, fileName) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () {
+          URL.revokeObjectURL(url);
+        }, 2000);
+      }
+
+      function clearObjectUrls() {
+        while (objectUrls.length) {
+          URL.revokeObjectURL(objectUrls.pop());
+        }
+      }
+
+      window.PPTMediaExtractorTest = {
+        analyzePptx: analyzePptx,
+        buildExportZip: buildExportZip,
+        SimpleZip: SimpleZip,
+        readImageDimensions: readImageDimensions,
+        readVideoDimensions: readVideoDimensions
+      };
+    })();
+  </script>
+</body>
+</html>
