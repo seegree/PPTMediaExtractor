@@ -300,8 +300,7 @@
         </fieldset>
 
         <div class="button-stack">
-          <button id="analyzeButton" class="primary" disabled>Analyze deck</button>
-          <button id="downloadButton" class="secondary" disabled>
+          <button id="downloadButton" class="primary" disabled>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
             Download ZIP
           </button>
@@ -333,7 +332,6 @@
       const elements = {
         dropZone: document.getElementById("dropZone"),
         fileInput: document.getElementById("fileInput"),
-        analyzeButton: document.getElementById("analyzeButton"),
         downloadButton: document.getElementById("downloadButton"),
         status: document.getElementById("status"),
         results: document.getElementById("results"),
@@ -345,6 +343,8 @@
       };
 
       let selectedFile = null;
+      let analysisRun = 0;
+      let settingsTimer = null;
       let currentPackage = null;
       const objectUrls = [];
 
@@ -386,12 +386,6 @@
         }
       });
 
-      elements.analyzeButton.addEventListener("click", function () {
-        if (selectedFile) {
-          analyzeSelectedFile();
-        }
-      });
-
       elements.downloadButton.addEventListener("click", function () {
         if (!currentPackage || !currentPackage.zipBlob) {
           return;
@@ -418,11 +412,10 @@
       });
 
       [elements.expectedWidth, elements.expectedHeight].forEach(function (input) {
-        input.addEventListener("change", function () {
+        input.addEventListener("input", function () {
+          clearTimeout(settingsTimer);
           if (selectedFile) {
-            currentPackage = null;
-            elements.downloadButton.disabled = true;
-            setStatus("Settings changed. Analyze again to refresh warnings.");
+            settingsTimer = setTimeout(analyzeSelectedFile, 500);
           }
         });
       });
@@ -432,22 +425,27 @@
         selectedFile = file;
         currentPackage = null;
         elements.downloadButton.disabled = true;
-        elements.analyzeButton.disabled = false;
         elements.fileRowName.textContent = file.name;
         elements.fileRowName.title = file.name;
         elements.fileRowSize.textContent = formatBytes(file.size);
         elements.fileRow.hidden = false;
-        setStatus("Ready to analyze " + file.name + ".");
-        renderEmpty("Ready to analyze.", "Click Analyze deck to extract embedded images and videos.");
+        clearTimeout(settingsTimer);
+        analyzeSelectedFile();
       }
 
       async function analyzeSelectedFile() {
+        // A newer run (new file or edited settings) supersedes this one.
+        const run = ++analysisRun;
+        const isCurrent = function () { return run === analysisRun; };
         try {
           clearObjectUrls();
           setBusy(true);
           setStatus("Reading PowerPoint package...");
           const settings = getSettings();
           const result = await analyzePptx(selectedFile, settings);
+          if (!isCurrent()) {
+            return;
+          }
           setStatus("Building ZIP package...");
           const zipBlob = buildExportZip(result);
           currentPackage = {
@@ -459,20 +457,24 @@
           elements.downloadButton.disabled = result.items.length === 0;
           setStatus(result.items.length ? "Done. " + result.items.length + " media file" + plural(result.items.length) + " ready to download." : "Done. No embedded images or videos were found.");
         } catch (error) {
+          if (!isCurrent()) {
+            return;
+          }
           console.error(error);
           currentPackage = null;
           elements.downloadButton.disabled = true;
           setStatus(error && error.message ? error.message : String(error), true);
           renderEmpty("Could not analyze this deck.", "Check that it is a normal .pptx file and try again.");
         } finally {
-          setBusy(false);
+          if (isCurrent()) {
+            setBusy(false);
+          }
         }
       }
 
       function setBusy(isBusy) {
-        elements.analyzeButton.disabled = isBusy || !selectedFile;
         elements.downloadButton.disabled = isBusy || !currentPackage || !currentPackage.zipBlob || currentPackage.result.items.length === 0;
-        elements.dropZone.style.pointerEvents = isBusy ? "none" : "";
+        elements.results.setAttribute("aria-busy", String(isBusy));
       }
 
       function setStatus(message, isError) {
