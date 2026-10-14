@@ -5,8 +5,8 @@ images and videos out of a PowerPoint deck.
 
 ## Quick Start
 
-1. Open `PPTMediaExtractor.html` in a current browser such as Chrome, Edge, or
-   Safari.
+1. Open the live tool at https://seegree.github.io/PPTMediaExtractor/, or open
+   `index.html` locally in a current browser such as Chrome, Edge, or Safari.
 2. Drop in a `.pptx` file.
 3. Click **Analyze PowerPoint**.
 4. Review the image/video list and warnings.
