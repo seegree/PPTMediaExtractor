@@ -4,548 +4,319 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PPT Media Extractor</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
   <style>
     :root {
       color-scheme: light;
-      --bg: #f6f8fb;
-      --panel: #ffffff;
-      --ink: #172033;
-      --muted: #647086;
-      --line: #d9e0ea;
-      --accent: #0076a8;
-      --accent-2: #00a9e0;
-      --good: #2f7d32;
-      --warn: #b26b00;
-      --bad: #b7312c;
-      --soft-warn: #fff4df;
-      --soft-bad: #ffebe9;
-      --shadow: 0 18px 45px rgba(18, 34, 61, 0.12);
+      --bg: #F7F7F5;
+      --panel: #FFFFFF;
+      --ink: #18181B;
+      --ink-2: #3F3F46;
+      --muted: #52525B;
+      --subtle: #71717A;
+      --line: #E4E4E0;
+      --line-soft: #F0F0EC;
+      --field: #D4D4CF;
+      --well: #F4F4F1;
+      --accent: #2B59C3;
+      --accent-hover: #1E4296;
+      --good-bg: #E8F3EC;  --good: #1E6B3A;
+      --bad-bg:  #FDECEA;  --bad:  #B42318;
+      --warn-bg: #FDF3E2;  --warn: #8A4B05;
+      --radius-card: 12px;
+      --radius-ctl: 8px;
+      --font: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      background: radial-gradient(circle at top left, #eaf6fb, transparent 34rem), var(--bg);
+      min-width: 320px;
+      background: var(--bg);
       color: var(--ink);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: var(--font);
+      font-size: 14px;
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
-    main {
-      width: min(1180px, calc(100vw - 40px));
+    button, input { font: inherit; color: inherit; }
+    svg { display: block; flex: none; }
+
+    /* Top bar */
+    .topbar { background: var(--panel); border-bottom: 1px solid var(--line); }
+    .topbar-inner {
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 42px 0 56px;
-    }
-
-    header {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 24px;
-      align-items: end;
-      margin-bottom: 26px;
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: clamp(2rem, 4vw, 3.35rem);
-      line-height: 1;
-      letter-spacing: -0.045em;
-    }
-
-    h2 {
-      margin: 0 0 14px;
-      font-size: 1rem;
-      letter-spacing: 0.01em;
-    }
-
-    p {
-      margin: 0;
-    }
-
-    .lede {
-      max-width: 780px;
-      color: var(--muted);
-      font-size: 1.06rem;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.72);
-      color: var(--muted);
-      font-size: 0.86rem;
-      white-space: nowrap;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
-      gap: 20px;
-      align-items: start;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid rgba(217, 224, 234, 0.9);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .card-inner {
-      padding: 22px;
-    }
-
-    .drop-zone {
-      position: relative;
-      display: grid;
-      place-items: center;
-      min-height: 232px;
-      padding: 28px;
-      border: 2px dashed #a9b8ca;
-      border-radius: 18px;
-      background:
-        linear-gradient(135deg, rgba(0, 169, 224, 0.08), rgba(0, 118, 168, 0.03)),
-        #fbfdff;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
-    }
-
-    .drop-zone:hover,
-    .drop-zone.is-dragging {
-      border-color: var(--accent);
-      background:
-        linear-gradient(135deg, rgba(0, 169, 224, 0.14), rgba(0, 118, 168, 0.06)),
-        #ffffff;
-      transform: translateY(-1px);
-    }
-
-    .drop-icon {
-      width: 56px;
-      height: 56px;
-      margin: 0 auto 14px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      color: #fff;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      font-weight: 800;
-      font-size: 1.25rem;
-      box-shadow: 0 14px 28px rgba(0, 118, 168, 0.24);
-    }
-
-    .drop-title {
-      font-size: 1.15rem;
-      font-weight: 760;
-      margin-bottom: 4px;
-    }
-
-    .drop-note {
-      color: var(--muted);
-      font-size: 0.93rem;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
-    .settings {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .control-section {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--line);
-    }
-
-    .section-kicker {
-      margin-bottom: 4px;
-      color: var(--muted);
-      font-size: 0.76rem;
-      font-weight: 820;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .rule-card {
-      margin-top: 12px;
-      padding: 13px 14px;
-      border: 1px solid #c7ddeb;
-      border-radius: 14px;
-      background: #f3faff;
-      color: #25425d;
-      font-size: 0.88rem;
-    }
-
-    label {
-      display: grid;
-      gap: 6px;
-      color: var(--muted);
-      font-size: 0.82rem;
-      font-weight: 650;
-    }
-
-    .field-help {
-      color: #7a8597;
-      font-size: 0.74rem;
-      font-weight: 500;
-      line-height: 1.3;
-    }
-
-    input[type="number"] {
-      width: 100%;
-      padding: 10px 11px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #fff;
-      color: var(--ink);
-      font: inherit;
-      font-size: 0.95rem;
-    }
-
-    .hint {
-      margin-top: 14px;
-      color: var(--muted);
-      font-size: 0.86rem;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-    }
-
-    button {
-      border: 0;
-      border-radius: 13px;
-      padding: 11px 15px;
-      background: var(--ink);
-      color: #fff;
-      font: inherit;
-      font-weight: 760;
-      cursor: pointer;
-      transition: transform 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
-    }
-
-    button.primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      box-shadow: 0 14px 28px rgba(0, 118, 168, 0.22);
-    }
-
-    button.secondary {
-      background: #e8eef6;
-      color: #26364f;
-    }
-
-    button:hover:not(:disabled) {
-      transform: translateY(-1px);
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.48;
-      box-shadow: none;
-    }
-
-    .status {
-      min-height: 24px;
-      margin-top: 14px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    .status.error {
-      color: var(--bad);
-      font-weight: 700;
-    }
-
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .stat {
-      padding: 16px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: #fff;
-    }
-
-    .stat-value {
-      font-size: 1.75rem;
-      line-height: 1;
-      font-weight: 850;
-      letter-spacing: -0.04em;
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.82rem;
-      font-weight: 680;
-    }
-
-    .results {
-      min-height: 420px;
-    }
-
-    .empty-state {
-      min-height: 360px;
-      display: grid;
-      place-items: center;
-      padding: 30px;
-      text-align: center;
-      color: var(--muted);
-    }
-
-    .empty-state strong {
-      display: block;
-      color: var(--ink);
-      font-size: 1.08rem;
-      margin-bottom: 4px;
-    }
-
-    .toolbar {
+      padding: 16px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px 24px;
     }
-
-    .file-name {
-      min-width: 0;
-      font-weight: 800;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; }
+    .brand-mark {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: var(--ink);
+      color: #FFFFFF;
+      display: grid; place-items: center;
     }
+    .local-note { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 
-    .table-wrap {
-      overflow: auto;
+    /* Layout */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .col-controls { flex: 1 1 340px; max-width: 400px; display: flex; flex-direction: column; gap: 20px; }
+    .col-results { flex: 999 1 560px; min-width: 0; }
+    @media (max-width: 960px) { .col-controls { max-width: none; } }
+
+    h1 { margin: 0 0 8px; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+    .lede { margin: 0; font-size: 14px; line-height: 1.55; color: var(--muted); }
+
+    .card {
+      background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 16px;
-      background: #fff;
+      border-radius: var(--radius-card);
     }
+    .controls { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 860px;
-      font-size: 0.88rem;
-    }
-
-    th,
-    td {
-      padding: 12px 13px;
-      border-bottom: 1px solid #eef2f7;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      background: #f8fafc;
-      color: #536177;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    tr:last-child td {
-      border-bottom: 0;
-    }
-
-    tr.status-low {
-      background: var(--soft-bad);
-    }
-
-    tr.status-check {
-      background: var(--soft-warn);
-    }
-
-    .pill {
-      display: inline-flex;
+    /* Drop zone */
+    .drop-zone {
+      position: relative;
+      border: 1.5px dashed #C9C9C3;
+      border-radius: 10px;
+      background: #FAFAF8;
+      padding: 28px 16px;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 0.76rem;
-      font-weight: 820;
-      white-space: nowrap;
+      gap: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 120ms ease, background 120ms ease;
     }
+    .drop-zone:hover, .drop-zone.is-dragging { border-color: var(--accent); background: #FFFFFF; }
+    .drop-zone input { display: none; }
+    .drop-zone svg { color: var(--muted); }
+    .drop-title { font-size: 14px; font-weight: 500; }
+    .drop-title b { color: var(--accent); font-weight: 500; }
+    .drop-note { font-size: 12px; color: var(--subtle); }
 
-    .pill.ok {
-      background: #e8f4eb;
-      color: var(--good);
-    }
-
-    .pill.low {
-      background: #ffe1de;
-      color: var(--bad);
-    }
-
-    .pill.check {
-      background: #fff0cf;
-      color: var(--warn);
-    }
-
-    .media-cell {
+    /* Selected file */
+    .file-row {
+      background: var(--well);
+      border-radius: var(--radius-ctl);
+      padding: 10px 12px;
       display: flex;
       align-items: center;
-      gap: 11px;
-      min-width: 230px;
+      gap: 10px;
+      min-width: 0;
     }
+    .file-row[hidden] { display: none; }
+    .file-row svg { color: #C2410C; }
+    .file-row-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-row-size { font-family: var(--mono); font-size: 12px; color: var(--subtle); white-space: nowrap; }
 
-    .thumb {
-      flex: 0 0 auto;
-      width: 54px;
-      height: 40px;
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      display: grid;
-      place-items: center;
-      background: #f1f5f9;
-      color: var(--muted);
-      font-size: 0.74rem;
-      font-weight: 850;
-      overflow: hidden;
-    }
-
-    .thumb img {
+    /* Resolution */
+    fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+    legend { padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+    .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .settings label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+    .settings input {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--ink);
+      min-height: 40px;
       width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      background: #fff;
+      border: 1px solid var(--field);
+      border-radius: 7px;
+      padding: 9px 10px;
+      background: var(--panel);
+    }
+    .help { margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: var(--subtle); }
+
+    /* Buttons */
+    .button-stack { display: flex; flex-direction: column; gap: 8px; }
+    .button-stack button {
+      width: 100%;
+      min-height: 44px;
+      border-radius: var(--radius-ctl);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .primary { background: var(--accent); color: #FFFFFF; border: 1px solid transparent; font-weight: 600; }
+    .primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .secondary { background: var(--panel); color: var(--ink); border: 1px solid var(--field); font-weight: 500; }
+    .secondary:hover:not(:disabled) { background: var(--well); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .status { font-size: 13px; color: var(--muted); }
+    .status.warning { color: var(--warn); }
+    .status.error { color: var(--bad); }
+
+    :is(input, button, a):focus-visible, #dropZone:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
-    .path {
-      color: var(--muted);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.76rem;
-      word-break: break-all;
+    /* Results */
+    #results { display: flex; flex-direction: column; gap: 16px; }
+    .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 16px; }
+    .stat-label { font-size: 12px; color: var(--muted); }
+    .stat-value { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin-top: 4px; }
+    .stat-value.bad { color: var(--bad); }
+    .stat-value.check { color: #A15C07; }
+
+    .media-card { overflow: hidden; }
+    .media-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid #ECECE8;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px;
     }
-
-    .warning-list {
-      margin: 0;
-      padding-left: 16px;
+    .media-head h2 { margin: 0; font-size: 14px; font-weight: 600; }
+    .media-meta { font-size: 12px; color: var(--subtle); font-weight: 400; margin-left: 6px; }
+    .segmented { display: inline-flex; background: var(--well); padding: 3px; border-radius: var(--radius-ctl); }
+    .segmented button {
+      border: 0; background: transparent; cursor: pointer;
+      font-size: 12px; color: var(--muted);
+      padding: 4px 10px; border-radius: 6px; min-height: 28px;
     }
+    .segmented button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 
-    .warning-list li {
-      margin: 0 0 3px;
+    .rows-scroll { overflow-x: auto; }
+    .rows { min-width: 560px; }
+    .row {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr) 120px 90px 96px;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line-soft);
     }
-
-    .report-note {
-      margin-top: 13px;
-      color: var(--muted);
-      font-size: 0.84rem;
+    .row[hidden] { display: none; }
+    .thumb {
+      width: 56px; height: 40px;
+      border-radius: 6px;
+      background: #EDEDE9;
+      overflow: hidden;
+      display: grid; place-items: center;
+      font-family: var(--mono); font-size: 10px; color: var(--subtle);
     }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .name { min-width: 0; }
+    .name-file { font-family: var(--mono); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .name-slides { font-size: 12px; color: var(--subtle); }
+    .name-warn { font-size: 12px; color: var(--warn); margin-top: 2px; }
+    .size { font-family: var(--mono); font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+    .type { font-size: 12px; color: var(--subtle); }
+    .pill { justify-self: start; font-size: 12px; font-weight: 500; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+    .pill.ok { background: var(--good-bg); color: var(--good); }
+    .pill.low { background: var(--bad-bg); color: var(--bad); }
+    .pill.check { background: var(--warn-bg); color: var(--warn); }
+    .no-match { padding: 24px 16px; font-size: 13px; color: var(--subtle); text-align: center; }
 
-    @media (max-width: 980px) {
-      header,
-      .grid {
-        grid-template-columns: 1fr;
-      }
+    .media-foot { padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+    .media-foot a { color: var(--accent); font-size: 13px; font-weight: 500; text-decoration: none; }
+    .media-foot a:hover { color: var(--accent-hover); text-decoration: underline; }
 
-      .summary {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
+    .notice { background: var(--warn-bg); color: var(--warn); border-radius: var(--radius-ctl); padding: 10px 12px; font-size: 12px; }
+    .footnote { margin: 0; font-size: 12px; color: var(--subtle); }
 
-    @media (max-width: 600px) {
-      main {
-        width: min(100vw - 24px, 1180px);
-        padding-top: 24px;
-      }
+    .empty-state { padding: 48px; text-align: center; }
+    .empty-state strong { display: block; font-size: 14px; font-weight: 600; }
+    .empty-state p { margin: 4px 0 0; font-size: 13px; color: var(--subtle); }
 
-      .settings,
-      .summary {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 520px) {
+      main { padding: 24px 16px 48px; }
+      .topbar-inner { padding: 14px 16px; }
+      .summary { gap: 8px; }
+      .stat { padding: 12px; }
+      .stat-value { font-size: 22px; }
+      .empty-state { padding: 32px 16px; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <header>
-      <div>
-        <h1>PPT Media Extractor</h1>
-        <p class="lede">Drop in a PowerPoint to extract embedded images and videos. Low-resolution items are flagged in the report and prefixed in the exported ZIP.</p>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg></span>
+        PPT Media Extractor
       </div>
-      <div class="badge">Runs locally in this browser</div>
-    </header>
+      <div class="local-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Runs locally — files never leave your browser
+      </div>
+    </div>
+  </header>
 
-    <section class="grid">
-      <aside class="card">
-        <div class="card-inner">
-          <div class="section-kicker">Step 1</div>
-          <h2>Choose a PowerPoint</h2>
-          <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Choose or drop a PowerPoint file">
-            <input id="fileInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
-            <div>
-              <div class="drop-icon">PPT</div>
-              <div class="drop-title">Drop a .pptx here</div>
-              <div class="drop-note">or click to choose a file</div>
-            </div>
-          </div>
+  <main>
+    <div class="col-controls">
+      <div>
+        <h1>Extract media from a deck</h1>
+        <p class="lede">Drop in a PowerPoint to pull out every embedded image and video. Low-resolution files are flagged in the report and prefixed in the ZIP.</p>
+      </div>
 
-          <div class="control-section">
-            <div class="section-kicker">Step 2</div>
-            <h2>Set the resolution rule</h2>
-            <div class="rule-card">Any image or video below this expected source size is marked <strong>LOW_RES__</strong>, even if PowerPoint only uses it as a small graphic.</div>
-            <div class="settings" aria-label="Resolution settings">
-              <label>
-                Expected source width
-                <input id="expectedWidth" type="number" min="320" max="8192" step="1" value="1920">
-                <span class="field-help">Files narrower than this are flagged.</span>
-              </label>
-              <label>
-                Expected source height
-                <input id="expectedHeight" type="number" min="240" max="8192" step="1" value="1080">
-                <span class="field-help">Files shorter than this are flagged.</span>
-              </label>
-            </div>
-
-            <p class="hint">PowerPoint placement is still shown in the report as context, but it no longer determines whether an asset passes.</p>
-          </div>
-
-          <div class="button-row">
-            <button id="analyzeButton" class="primary" disabled>Analyze PowerPoint</button>
-            <button id="downloadButton" class="secondary" disabled>Download ZIP</button>
-          </div>
-          <div id="status" class="status" aria-live="polite">Waiting for a PowerPoint file.</div>
+      <section class="card controls">
+        <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Choose or drop a PowerPoint file">
+          <input id="fileInput" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+          <div class="drop-title">Drop a .pptx or <b>browse</b></div>
+          <div class="drop-note">Processed entirely on this device</div>
         </div>
-      </aside>
 
-      <section class="card results">
-        <div class="card-inner">
-          <div id="results">
-            <div class="empty-state">
-              <div>
-                <strong>No deck analyzed yet.</strong>
-                <p>Extracted images, videos, slide references, and warnings will appear here.</p>
-              </div>
-            </div>
-          </div>
+        <div id="fileRow" class="file-row" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          <span id="fileRowName" class="file-row-name"></span>
+          <span id="fileRowSize" class="file-row-size"></span>
         </div>
+
+        <fieldset>
+          <legend>Minimum source resolution</legend>
+          <div class="settings">
+            <label>
+              Width
+              <input id="expectedWidth" type="number" min="320" max="8192" step="1" value="1920" inputmode="numeric">
+            </label>
+            <label>
+              Height
+              <input id="expectedHeight" type="number" min="240" max="8192" step="1" value="1080" inputmode="numeric">
+            </label>
+          </div>
+          <p class="help">Smaller files get a LOW_RES__ prefix. How large it sits on the slide is shown for context only.</p>
+        </fieldset>
+
+        <div class="button-stack">
+          <button id="analyzeButton" class="primary" disabled>Analyze deck</button>
+          <button id="downloadButton" class="secondary" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+            Download ZIP
+          </button>
+        </div>
+        <div id="status" class="status" aria-live="polite">Waiting for a PowerPoint file.</div>
       </section>
+    </div>
+
+    <section class="col-results" aria-label="Results">
+      <div id="results">
+        <div class="card empty-state">
+          <strong>No deck analyzed yet.</strong>
+          <p>Extracted images, videos, slide references, and warnings will appear here.</p>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -567,7 +338,10 @@
         status: document.getElementById("status"),
         results: document.getElementById("results"),
         expectedWidth: document.getElementById("expectedWidth"),
-        expectedHeight: document.getElementById("expectedHeight")
+        expectedHeight: document.getElementById("expectedHeight"),
+        fileRow: document.getElementById("fileRow"),
+        fileRowName: document.getElementById("fileRowName"),
+        fileRowSize: document.getElementById("fileRowSize")
       };
 
       let selectedFile = null;
@@ -625,6 +399,24 @@
         downloadBlob(currentPackage.zipBlob, currentPackage.zipName);
       });
 
+      elements.results.addEventListener("click", function (event) {
+        const filterButton = event.target.closest("[data-filter]");
+        if (filterButton) {
+          applyFilter(filterButton.getAttribute("data-filter"));
+          return;
+        }
+        const reportLink = event.target.closest("[data-report]");
+        if (reportLink && currentPackage) {
+          event.preventDefault();
+          const isCsv = reportLink.getAttribute("data-report") === "csv";
+          const result = currentPackage.result;
+          downloadBlob(
+            new Blob([isCsv ? result.csvReport : result.htmlReport], { type: isCsv ? "text/csv" : "text/html" }),
+            makeBaseName(selectedFile.name) + (isCsv ? "-media-report.csv" : "-media-report.html")
+          );
+        }
+      });
+
       [elements.expectedWidth, elements.expectedHeight].forEach(function (input) {
         input.addEventListener("change", function () {
           if (selectedFile) {
@@ -641,8 +433,12 @@
         currentPackage = null;
         elements.downloadButton.disabled = true;
         elements.analyzeButton.disabled = false;
+        elements.fileRowName.textContent = file.name;
+        elements.fileRowName.title = file.name;
+        elements.fileRowSize.textContent = formatBytes(file.size);
+        elements.fileRow.hidden = false;
         setStatus("Ready to analyze " + file.name + ".");
-        renderEmpty("Ready to analyze.", "Click Analyze PowerPoint to extract embedded images and videos.");
+        renderEmpty("Ready to analyze.", "Click Analyze deck to extract embedded images and videos.");
       }
 
       async function analyzeSelectedFile() {
@@ -1045,49 +841,77 @@
       function renderResults(result) {
         const lowCount = result.items.filter(function (item) { return item.status === "low"; }).length;
         const checkCount = result.items.filter(function (item) { return item.status === "check"; }).length;
-        const imageCount = result.items.filter(function (item) { return item.category === "image"; }).length;
-        const videoCount = result.items.filter(function (item) { return item.category === "video"; }).length;
         const rows = result.items.map(renderItemRow).join("");
-        const table = rows
-          ? "<div class=\"table-wrap\"><table><thead><tr><th>Status</th><th>Media</th><th>Slides</th><th>Source Size</th><th>PPT Use</th><th>Export Name</th><th>Warnings</th></tr></thead><tbody>" + rows + "</tbody></table></div>"
-          : "<div class=\"empty-state\"><div><strong>No embedded media found.</strong><p>This deck did not contain extractable image or video files under <span class=\"path\">ppt/media</span>.</p></div></div>";
+        const reportLinks = "<div class=\"media-foot\"><a href=\"#\" data-report=\"html\">Download HTML report</a><a href=\"#\" data-report=\"csv\">Download CSV</a></div>";
+        const list = rows
+          ? [
+            "<div class=\"card media-card\">",
+            "<div class=\"media-head\"><h2>Extracted media<span class=\"media-meta\">min " + result.settings.expectedWidth + " × " + result.settings.expectedHeight + "</span></h2>",
+            "<div class=\"segmented\" role=\"group\" aria-label=\"Filter media\">",
+            "<button type=\"button\" data-filter=\"all\" aria-pressed=\"true\">All</button>",
+            "<button type=\"button\" data-filter=\"low\" aria-pressed=\"false\">Low-res</button>",
+            "<button type=\"button\" data-filter=\"video\" aria-pressed=\"false\">Videos</button>",
+            "</div></div>",
+            "<div class=\"rows-scroll\"><div class=\"rows\">" + rows + "<div class=\"no-match\" hidden>No media matches this filter.</div></div></div>",
+            reportLinks,
+            "</div>"
+          ].join("")
+          : "<div class=\"card empty-state\"><strong>No embedded media found.</strong><p>This deck did not contain extractable image or video files under ppt/media.</p></div>";
 
         elements.results.innerHTML = [
-          "<div class=\"toolbar\"><div class=\"file-name\" title=\"" + escapeHtml(result.fileName) + "\">" + escapeHtml(result.fileName) + "</div><div class=\"badge\">Expected source: " + result.settings.expectedWidth + "x" + result.settings.expectedHeight + "</div></div>",
           "<div class=\"summary\">",
-          renderStat(result.items.length, "Media files"),
-          renderStat(imageCount, "Images"),
-          renderStat(videoCount, "Videos"),
-          renderStat(lowCount + checkCount, "Need review"),
+          renderStat(result.items.length, "Total media", ""),
+          renderStat(lowCount, "Low-res", "bad"),
+          renderStat(checkCount, "Check manually", "check"),
           "</div>",
-          table,
-          result.externalMedia.length ? "<p class=\"report-note\">" + result.externalMedia.length + " external media reference" + plural(result.externalMedia.length) + " found. External media cannot be extracted from the .pptx package.</p>" : "",
-          "<p class=\"report-note\">PPT use is approximate context based on the largest detected placement. It does not decide whether an item passes.</p>",
-          "<p class=\"report-note\">The downloaded ZIP includes the original files plus HTML and CSV reports.</p>"
+          list,
+          result.externalMedia.length ? "<div class=\"notice\">" + result.externalMedia.length + " external media reference" + plural(result.externalMedia.length) + " found. External media cannot be extracted from the .pptx package.</div>" : "",
+          rows ? "<p class=\"footnote\">The ZIP includes the original files plus HTML and CSV reports. Slide placement is shown in the reports as context only.</p>" : ""
         ].join("");
       }
 
-      function renderStat(value, label) {
-        return "<div class=\"stat\"><div class=\"stat-value\">" + value + "</div><div class=\"stat-label\">" + escapeHtml(label) + "</div></div>";
+      function applyFilter(filter) {
+        let visible = 0;
+        elements.results.querySelectorAll("[data-filter]").forEach(function (button) {
+          button.setAttribute("aria-pressed", String(button.getAttribute("data-filter") === filter));
+        });
+        elements.results.querySelectorAll(".row").forEach(function (row) {
+          const show = filter === "all"
+            || (filter === "low" && row.getAttribute("data-status") === "low")
+            || (filter === "video" && row.getAttribute("data-category") === "video");
+          row.hidden = !show;
+          if (show) {
+            visible += 1;
+          }
+        });
+        const noMatch = elements.results.querySelector(".no-match");
+        if (noMatch) {
+          noMatch.hidden = visible > 0;
+        }
+      }
+
+      function renderStat(value, label, tone) {
+        return "<div class=\"stat\"><div class=\"stat-label\">" + escapeHtml(label) + "</div><div class=\"stat-value " + tone + "\">" + value + "</div></div>";
       }
 
       function renderItemRow(item) {
         const statusLabel = item.status === "low" ? "Low-res" : item.status === "check" ? "Check" : "OK";
-        const dimensions = item.dimensions ? item.dimensions.width + "x" + item.dimensions.height : "Unknown";
-        const largest = item.largestDisplay ? item.largestDisplay.width + "x" + item.largestDisplay.height : "Not placed";
-        const warnings = item.warnings.length
-          ? "<ul class=\"warning-list\">" + item.warnings.map(function (warning) { return "<li>" + escapeHtml(warning) + "</li>"; }).join("") + "</ul>"
-          : "<span class=\"path\">None</span>";
+        const dimensions = item.dimensions ? item.dimensions.width + " × " + item.dimensions.height : "Unknown";
+        const slides = item.slides.length ? "Slide" + plural(item.slides.length) + " " + item.slides.join(", ") : "Unmapped";
+        const placement = item.largestDisplay ? " · shown at " + item.largestDisplay.width + " × " + item.largestDisplay.height : "";
+        const warnings = item.warnings
+          .filter(function (warning) { return item.status !== "low" || warning.indexOf("Below expected") !== 0; })
+          .map(function (warning) { return "<div class=\"name-warn\">" + escapeHtml(warning) + "</div>"; })
+          .join("");
+        const type = (item.extension || "").toUpperCase() + " " + (item.category === "video" ? "video" : "image");
         return [
-          "<tr class=\"status-" + item.status + "\">",
-          "<td><span class=\"pill " + item.status + "\">" + statusLabel + "</span></td>",
-          "<td><div class=\"media-cell\">" + renderThumb(item) + "<div><strong>" + escapeHtml(basename(item.sourcePath)) + "</strong><div class=\"path\">" + escapeHtml(item.sourcePath) + "</div></div></div></td>",
-          "<td>" + (item.slides.length ? escapeHtml(compactSlideList(item.slides)) : "<span class=\"path\">Unmapped</span>") + "</td>",
-          "<td>" + escapeHtml(dimensions) + "</td>",
-          "<td>" + escapeHtml(largest) + "</td>",
-          "<td><span class=\"path\">" + escapeHtml(item.exportName) + "</span></td>",
-          "<td>" + warnings + "</td>",
-          "</tr>"
+          "<div class=\"row\" data-status=\"" + item.status + "\" data-category=\"" + item.category + "\">",
+          renderThumb(item),
+          "<div class=\"name\"><div class=\"name-file\" title=\"" + escapeHtml(item.exportName) + "\">" + escapeHtml(basename(item.sourcePath)) + "</div><div class=\"name-slides\">" + escapeHtml(slides + placement) + "</div>" + warnings + "</div>",
+          "<div class=\"size\">" + escapeHtml(dimensions) + "</div>",
+          "<div class=\"type\">" + escapeHtml(type.trim()) + "</div>",
+          "<span class=\"pill " + item.status + "\">" + statusLabel + "</span>",
+          "</div>"
         ].join("");
       }
 
@@ -1097,11 +921,25 @@
           objectUrls.push(url);
           return "<div class=\"thumb\"><img src=\"" + url + "\" alt=\"\"></div>";
         }
-        return "<div class=\"thumb\">" + (item.category === "video" ? "VID" : item.extension.toUpperCase()) + "</div>";
+        return "<div class=\"thumb\">" + (item.category === "video" ? "VID" : escapeHtml(item.extension.toUpperCase())) + "</div>";
       }
 
       function renderEmpty(title, body) {
-        elements.results.innerHTML = "<div class=\"empty-state\"><div><strong>" + escapeHtml(title) + "</strong><p>" + escapeHtml(body) + "</p></div></div>";
+        elements.results.innerHTML = "<div class=\"card empty-state\"><strong>" + escapeHtml(title) + "</strong><p>" + escapeHtml(body) + "</p></div>";
+      }
+
+      function formatBytes(bytes) {
+        if (bytes < 1024) {
+          return bytes + " B";
+        }
+        const units = ["KB", "MB", "GB"];
+        let value = bytes / 1024;
+        let unit = 0;
+        while (value >= 1024 && unit < units.length - 1) {
+          value /= 1024;
+          unit += 1;
+        }
+        return value.toFixed(value < 10 ? 1 : 0) + " " + units[unit];
       }
 
       function buildHtmlReport(fileName, items, settings, externalMedia) {
