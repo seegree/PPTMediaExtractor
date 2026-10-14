@@ -1,11 +1,11 @@
-# PPT Media Extractor
+# PPTXtractor
 
-PPT Media Extractor is a single-file browser utility for pulling embedded
+PPTXtractor is a single-file browser utility for pulling embedded
 images and videos out of a PowerPoint deck.
 
 ## Quick Start
 
-1. Open the live tool at https://seegree.github.io/PPTMediaExtractor/, or open
+1. Open the live tool at https://seegree.github.io/pptx-tractor/, or open
    `index.html` locally in a current browser such as Chrome, Edge, or Safari.
 2. Drop in a `.pptx` file.
 3. The deck is analyzed automatically. Changing the resolution re-runs it.
